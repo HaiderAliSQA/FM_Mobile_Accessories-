@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: kingsman-api
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: JAZZCASH_MERCHANT_ID
+        sync: false
+      - key: JAZZCASH_PASSWORD
+        sync: false
+      - key: JAZZCASH_INTEGRITY_SALT
+        sync: false
+      - key: JAZZCASH_URL
+        sync: false
+      - key: EASYPAISA_STORE_ID
+        sync: false
+      - key: EASYPAISA_HASH_KEY
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: TAX_AMOUNT
+        value: "80"
