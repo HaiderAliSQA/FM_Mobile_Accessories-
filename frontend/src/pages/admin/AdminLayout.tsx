@@ -44,29 +44,29 @@ const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div className="h-screen bg-fm-bg font-dm text-fm-text flex overflow-hidden">
+    <div className="h-screen bg-navy-dark font-body text-white flex overflow-hidden">
       
-      {/* Mobile Backdrop Overlay - Only for very small screens when sidebar overlays */}
+      {/* Mobile Backdrop Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-fm-text/40 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-fm-border z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 w-64 bg-navy-mid border-r border-navy-light z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand */}
-        <div className="h-20 flex items-center justify-between border-b border-fm-border px-6 shrink-0 bg-[#FAFAF8]">
+        <div className="h-20 flex items-center justify-between border-b border-navy-light px-6 shrink-0 bg-navy-mid">
           <Link to="/admin/dashboard" className="flex flex-col">
-            <span className="font-playfair text-fm-text text-2xl font-black tracking-tighter">
+            <span className="font-heading text-white text-2xl font-black tracking-tighter">
               FM MOBILE
             </span>
-            <span className="text-fm-text-3 text-[9px] tracking-[0.3em] uppercase font-bold">
+            <span className="text-electric text-[9px] tracking-[0.3em] uppercase font-bold glow-blue">
               Management
             </span>
           </Link>
@@ -74,7 +74,7 @@ const AdminLayout: React.FC = () => {
           {/* Internal sidebar close for mobile */}
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden p-2 text-fm-text-3 hover:text-fm-text transition-colors"
+            className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -90,26 +90,26 @@ const AdminLayout: React.FC = () => {
               <Link
                 key={link.label}
                 to={link.path}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-sm transition-all group ${
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group ${
                   isActive
-                    ? 'bg-[#1A1714] text-[#B8860B] font-bold shadow-lg shadow-black/5'
-                    : 'text-fm-text-2 hover:bg-[#FAF9F6] hover:text-[#1A1714]'
+                    ? 'bg-electric/20 text-blue-glow border border-electric/30 shadow-glow-blue'
+                    : 'text-gray-400 hover:bg-navy-light hover:text-white'
                 }`}
               >
-                <svg className={`w-5 h-5 ${isActive ? 'text-[#B8860B]' : 'text-fm-text-3 group-hover:text-[#B8860B]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-5 h-5 ${isActive ? 'text-blue-glow' : 'text-gray-400 group-hover:text-blue-glow'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive ? 2 : 1.5} d={link.icon} />
                 </svg>
-                <span className="text-[11px] tracking-[0.2em] uppercase font-black">{link.label}</span>
+                <span className="text-[11px] tracking-[0.2em] uppercase font-bold">{link.label}</span>
               </Link>
             );
           })}
         </nav>
 
         {/* Footer info / Logout */}
-        <div className="p-6 border-t border-fm-border shrink-0 bg-[#FAFAF8]">
+        <div className="p-6 border-t border-navy-light shrink-0 bg-navy-mid">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border border-fm-error/20 text-fm-error hover:bg-red-50 hover:border-fm-error transition-all text-[10px] font-black uppercase tracking-[0.2em] rounded-sm group"
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-navy-dark border border-fm-red/30 text-fm-red hover:bg-fm-red hover:text-white transition-all text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl group shadow-card"
           >
             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -121,40 +121,40 @@ const AdminLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <div 
-        className={`flex-1 flex flex-col min-w-0 bg-[#F7F5F0] transition-all duration-300 ease-in-out ${
+        className={`flex-1 flex flex-col min-w-0 bg-navy-dark transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'lg:ml-64' : 'ml-0'
         }`}
       >
         {/* Universal Sticky Header */}
-        <header className="h-20 bg-white border-b border-fm-border flex items-center px-6 shrink-0 justify-between sticky top-0 z-30 shadow-xs">
+        <header className="h-20 bg-navy-mid border-b border-navy-light flex items-center px-6 shrink-0 justify-between sticky top-0 z-30 shadow-md">
           <div className="flex items-center gap-6">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 -ml-2 text-fm-text hover:text-[#B8860B] transition-all transform active:scale-95"
+              className="p-2 -ml-2 text-white hover:text-electric transition-all transform active:scale-95"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <div className="hidden sm:block">
-              <span className="font-playfair text-[#1A1714] text-lg font-black tracking-tight uppercase">
+              <span className="font-heading text-white text-lg font-bold tracking-wider uppercase">
                 {navLinks.find(l => location.pathname.includes(l.path))?.label || 'Administration'}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <Link to="/" className="text-[10px] font-black uppercase tracking-widest text-[#B8860B] hover:underline mr-2">
+            <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-electric hover:underline mr-2">
               View Site
             </Link>
-            <div className="w-8 h-8 rounded-full bg-[#1A1714] text-[#B8860B] flex items-center justify-center font-bold text-xs ring-2 ring-[#F7F5F0]">
+            <div className="w-8 h-8 rounded-full bg-electric text-white flex items-center justify-center font-bold text-xs ring-2 ring-electric/30 shadow-glow-blue">
               A
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto h-[calc(100vh-80px)] bg-[#F7F5F0]">
+        <main className="flex-1 overflow-y-auto h-[calc(100vh-80px)] bg-navy-dark p-6">
           <div className="max-w-none">
             <Outlet />
           </div>
@@ -165,3 +165,4 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
+

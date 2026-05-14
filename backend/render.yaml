@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: kingsman-api
+    name: fmsmart-api
     env: node
     region: singapore
     plan: free

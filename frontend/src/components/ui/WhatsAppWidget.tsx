@@ -4,7 +4,7 @@ import React from 'react';
 const WhatsAppWidget: React.FC = () => {
   return (
     <a
-      href="https://wa.me/923007702061"
+      href="https://wa.me/923017967300"
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-8 right-8 z-[100] w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-2xl hover:scale-110 hover:-translate-y-1 transition-all duration-300 group"
@@ -17,7 +17,7 @@ const WhatsAppWidget: React.FC = () => {
 
       
       {/* Tooltip */}
-      <span className="absolute right-full mr-4 bg-[#1A1714] text-white text-[10px] font-bold tracking-widest uppercase py-2 px-4 rounded-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl">
+      <span className="absolute right-full mr-4 bg-navy-light text-white text-[10px] font-bold tracking-widest uppercase py-2 px-4 rounded-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl">
         Chat with us
       </span>
     </a>

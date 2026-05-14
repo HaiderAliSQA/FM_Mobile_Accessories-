@@ -27,38 +27,36 @@ export const SearchBar: React.FC = () => {
     if (query.trim()) params.set('q', query.trim());
     
     if (category && !query.trim()) {
-      navigate(`/category/${category}`);
+      navigate(`/products?category=${category}`);
     } else if (params.toString()) {
       navigate(`/search?${params.toString()}`);
     }
   };
 
   return (
-    <div className="flex items-center bg-[#f8f5f0] border border-fm-border rounded-full px-2 py-1 ml-4 w-full max-w-md shadow-sm">
+    <div className="flex items-center w-full bg-navy-mid border border-gray-700 rounded-xl overflow-hidden group focus-within:border-electric transition-all h-11 md:h-12 shadow-inner">
       <select 
         value={category} 
         onChange={(e) => setCategory(e.target.value)}
-        className="bg-transparent border-none outline-none font-dm text-[11px] font-bold text-fm-text px-3 py-1 cursor-pointer min-w-[120px] uppercase tracking-wider"
+        className="bg-transparent border-none outline-none font-body text-[10px] md:text-xs font-semibold text-gray-300 px-3 md:px-4 cursor-pointer min-w-[100px] md:min-w-[140px] uppercase tracking-wider border-r border-gray-700"
       >
-        {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+        {CATEGORIES.map(c => <option key={c.value} value={c.value} className="bg-navy-dark text-white">{c.label}</option>)}
       </select>
-      
-      <div className="w-[1px] h-4 bg-fm-border mx-1" />
       
       <input
         type="text"
-        placeholder="Search products..."
+        placeholder="Search products, brands, models..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-        className="flex-1 bg-transparent border-none outline-none px-4 py-1 font-dm text-[13px] text-fm-text placeholder-fm-text-3"
+        className="flex-1 bg-transparent border-none outline-none px-4 py-1 font-body text-sm text-white placeholder-gray-500"
       />
       
       <button 
         onClick={handleSearch}
-        className="w-8 h-8 flex items-center justify-center bg-fm-gold text-white rounded-full transition-transform hover:scale-110 active:scale-95 ml-1"
+        className="w-11 md:w-14 h-full flex items-center justify-center bg-electric hover:bg-blue-600 text-white transition-all active:scale-95"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </button>

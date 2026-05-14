@@ -166,20 +166,20 @@ const AdminEditProduct: React.FC = () => {
   };
 
   if (initialLoading) {
-    return <div className="p-12 text-center text-fm-text-3 font-dm animate-pulse">Loading product...</div>;
+    return <div className="p-12 text-center text-white-3 font-dm animate-pulse">Loading product...</div>;
   }
 
   return (
     <div className="max-w-5xl mx-auto pb-12 font-dm">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="font-playfair text-fm-text text-3xl font-semibold tracking-wide">Edit Product</h1>
-          <p className="text-fm-text-2 mt-2 text-sm tracking-wider">Update product details</p>
+          <h1 className="font-playfair text-white text-3xl font-semibold tracking-wide">Edit Product</h1>
+          <p className="text-white-2 mt-2 text-sm tracking-wider">Update product details</p>
         </div>
         <button
           type="button"
           onClick={() => navigate('/admin/products')}
-          className="text-fm-text-3 hover:text-fm-error transition-colors text-[13px] uppercase tracking-widest font-semibold"
+          className="text-white-3 hover:text-fm-error transition-colors text-[13px] uppercase tracking-widest font-semibold"
         >
           Cancel
         </button>
@@ -188,55 +188,55 @@ const AdminEditProduct: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         
         {/* Core Info */}
-        <div className="bg-white border border-fm-border p-8 shadow-sm">
-          <h2 className="text-lg font-playfair text-fm-text mb-6 border-b border-fm-border pb-3 font-semibold">Basic Details</h2>
+        <div className="bg-navy-mid border border-navy-light p-8 shadow-sm">
+          <h2 className="text-lg font-playfair text-white mb-6 border-b border-navy-light pb-3 font-semibold">Basic Details</h2>
           
           <div className="space-y-6">
             <div>
-              <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Product Name</label>
+              <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Product Name</label>
               <input
                 {...register('name')}
                 type="text"
-                className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
               />
               {errors.name && <p className="text-fm-error text-xs mt-1.5">{errors.name.message}</p>}
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Description</label>
+              <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Description</label>
               <textarea
                 {...register('description')}
                 rows={4}
-                className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold resize-y"
+                className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold resize-y"
               />
               {errors.description && <p className="text-fm-error text-xs mt-1.5">{errors.description.message}</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
-                <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Price (PKR)</label>
+                <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Price (PKR)</label>
                 <input
                   {...register('price', { valueAsNumber: true })}
                   type="number"
-                  className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                  className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
                 />
                 {errors.price && <p className="text-fm-error text-xs mt-1.5">{errors.price.message}</p>}
               </div>
               <div>
-                <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Compare at Price</label>
+                <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Compare at Price</label>
                 <input
                   {...register('compareAtPrice', { valueAsNumber: true })}
                   type="number"
-                  className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                  className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
                 />
                 {errors.compareAtPrice && <p className="text-fm-error text-xs mt-1.5">{errors.compareAtPrice.message}</p>}
               </div>
               <div>
-                <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Stock Quantity</label>
+                <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Stock Quantity</label>
                 <input
                   {...register('stock', { valueAsNumber: true })}
                   type="number"
-                  className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                  className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
                 />
                 {errors.stock && <p className="text-fm-error text-xs mt-1.5">{errors.stock.message}</p>}
               </div>
@@ -244,21 +244,21 @@ const AdminEditProduct: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Category</label>
+                <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Category</label>
                 <select
                   {...register('category')}
-                  className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                  className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
                 >
                   {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_LABELS[c as Category]}</option>)}
                 </select>
                 {errors.category && <p className="text-fm-error text-xs mt-1.5">{errors.category.message}</p>}
               </div>
               <div>
-                <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Brand</label>
+                <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Brand</label>
                 <input
                   {...register('brand')}
                   type="text"
-                  className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                  className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
                   placeholder="e.g. Samsung, Apple..."
                 />
               </div>
@@ -267,15 +267,15 @@ const AdminEditProduct: React.FC = () => {
         </div>
 
         {/* Media */}
-        <div className="bg-white border border-fm-border p-8 shadow-sm">
-          <h2 className="text-lg font-playfair text-fm-text mb-6 border-b border-fm-border pb-3 font-semibold flex justify-between items-center">
+        <div className="bg-navy-mid border border-navy-light p-8 shadow-sm">
+          <h2 className="text-lg font-playfair text-white mb-6 border-b border-navy-light pb-3 font-semibold flex justify-between items-center">
             <span>Media (Images)</span>
-            {isUploading && <span className="text-xs text-fm-text-3 animate-pulse uppercase tracking-wider font-dm">Uploading...</span>}
+            {isUploading && <span className="text-xs text-white-3 animate-pulse uppercase tracking-wider font-dm">Uploading...</span>}
           </h2>
           
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-6 mb-4">
             {images.map((img, i) => (
-              <div key={i} className="relative aspect-square rounded-sm border border-fm-border group overflow-hidden bg-fm-bg">
+              <div key={i} className="relative aspect-square rounded-sm border border-navy-light group overflow-hidden bg-fm-bg">
                 <img src={img} alt="Product" className="w-full h-full object-contain mix-blend-multiply p-2" />
                 <button
                   type="button"
@@ -287,7 +287,7 @@ const AdminEditProduct: React.FC = () => {
                 </button>
               </div>
             ))}
-             <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-fm-border rounded-sm hover:border-fm-gold cursor-pointer transition-colors text-fm-text-3 hover:text-fm-gold bg-fm-surface-2 hover:bg-fm-gold/10 relative">
+             <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-navy-light rounded-sm hover:border-fm-gold cursor-pointer transition-colors text-white-3 hover:text-electric bg-fm-surface-2 hover:bg-fm-gold/10 relative">
               <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               <span className="text-[11px] uppercase tracking-widest font-bold">Upload</span>
               <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" disabled={isUploading} />
@@ -297,52 +297,52 @@ const AdminEditProduct: React.FC = () => {
         </div>
 
         {/* Attributes */}
-        <div className="bg-white border border-fm-border p-8 shadow-sm">
-          <h2 className="text-lg font-playfair text-fm-text mb-6 border-b border-fm-border pb-3 font-semibold">Attributes & Compatibility</h2>
+        <div className="bg-navy-mid border border-navy-light p-8 shadow-sm">
+          <h2 className="text-lg font-playfair text-white mb-6 border-b border-navy-light pb-3 font-semibold">Attributes & Compatibility</h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             <div>
-              <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Colors (comma separated)</label>
+              <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Colors (comma separated)</label>
               <input
                 {...register('colors')}
                 type="text"
                 placeholder="black, silver, red"
-                className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
               />
             </div>
             <div>
-              <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Compatibility (comma separated)</label>
+              <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Compatibility (comma separated)</label>
               <input
                 {...register('compatibleModels')}
                 type="text"
                 placeholder="iPhone 15, S23 Ultra..."
-                className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+                className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
               />
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-[13px] font-semibold text-fm-text-2 mb-2 uppercase tracking-wide">Tags (comma separated)</label>
+            <label className="block text-[13px] font-semibold text-white-2 mb-2 uppercase tracking-wide">Tags (comma separated)</label>
             <input
               {...register('tags')}
               type="text"
               placeholder="fast-charging, durable..."
-              className="w-full bg-fm-bg border border-fm-border text-fm-text font-dm px-4 py-3 outline-none focus:border-fm-gold"
+              className="w-full bg-fm-bg border border-navy-light text-white font-dm px-4 py-3 outline-none focus:border-fm-gold"
             />
           </div>
 
-          <div className="flex flex-wrap gap-8 pt-6 border-t border-fm-border bg-fm-surface-2 p-5 border">
+          <div className="flex flex-wrap gap-8 pt-6 border-t border-navy-light bg-fm-surface-2 p-5 border">
             <label className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" {...register('isVisible')} className="w-4 h-4 rounded-sm border-fm-border text-fm-gold focus:ring-fm-gold" />
-              <span className="text-sm font-medium text-fm-text group-hover:text-fm-gold transition-colors">Visible to public</span>
+              <input type="checkbox" {...register('isVisible')} className="w-4 h-4 rounded-sm border-navy-light text-electric focus:ring-fm-gold" />
+              <span className="text-sm font-medium text-white group-hover:text-electric transition-colors">Visible to public</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" {...register('isFeatured')} className="w-4 h-4 rounded-sm border-fm-border text-fm-gold focus:ring-fm-gold" />
-              <span className="text-sm font-medium text-fm-text group-hover:text-fm-gold transition-colors">Featured Product</span>
+              <input type="checkbox" {...register('isFeatured')} className="w-4 h-4 rounded-sm border-navy-light text-electric focus:ring-fm-gold" />
+              <span className="text-sm font-medium text-white group-hover:text-electric transition-colors">Featured Product</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" {...register('isNewArrival')} className="w-4 h-4 rounded-sm border-fm-border text-fm-gold focus:ring-fm-gold" />
-              <span className="text-sm font-medium text-fm-text group-hover:text-fm-gold transition-colors">New Arrival Label</span>
+              <input type="checkbox" {...register('isNewArrival')} className="w-4 h-4 rounded-sm border-navy-light text-electric focus:ring-fm-gold" />
+              <span className="text-sm font-medium text-white group-hover:text-electric transition-colors">New Arrival Label</span>
             </label>
           </div>
         </div>
@@ -351,7 +351,7 @@ const AdminEditProduct: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/admin/products')}
-            className="px-8 py-3 bg-white border border-fm-border text-fm-text font-dm text-[13px] uppercase tracking-widest font-medium hover:border-fm-text transition-colors"
+            className="px-8 py-3 bg-navy-mid border border-navy-light text-white font-dm text-[13px] uppercase tracking-widest font-medium hover:border-fm-text transition-colors"
           >
             Cancel
           </button>

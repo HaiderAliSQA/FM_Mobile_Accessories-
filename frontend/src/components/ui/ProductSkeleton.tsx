@@ -3,7 +3,7 @@ import React from 'react';
 
 const ProductSkeleton: React.FC = () => {
   return (
-    <div className="bg-white overflow-hidden flex flex-col border border-fm-border/30">
+    <div className="bg-navy-mid overflow-hidden flex flex-col border border-navy-light/30">
       {/* Premium shimmer skeleton matching product card shape */}
       <div className="skeleton-shimmer aspect-square w-full" />
       

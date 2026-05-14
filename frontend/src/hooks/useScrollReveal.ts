@@ -1,36 +1,26 @@
-// frontend/src/hooks/useScrollReveal.ts
-// used for scroll animations throughout the site
 import { useEffect, useRef } from 'react';
 
-export const useScrollReveal = (threshold = 0.15, deps: any[] = []) => {
+export const useScrollReveal = (threshold = 0.15) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            // Once revealed, stop observing
-            observer.unobserve(entry.target);
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add('animate-fade-up');
+          el.classList.remove('opacity-0', 'translate-y-6');
+          observer.unobserve(el);
+        }
       },
-      { threshold, rootMargin: '0px 0px -60px 0px' }
+      { threshold }
     );
 
-    // Observe all elements with scroll-reveal class inside ref
-    if (ref.current) {
-      const elements = ref.current.querySelectorAll(
-        '.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale'
-      );
-      elements.forEach((el) => observer.observe(el));
-    }
-
+    observer.observe(el);
     return () => observer.disconnect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [threshold, ...deps]);
+  }, [threshold]);
 
   return ref;
 };
-

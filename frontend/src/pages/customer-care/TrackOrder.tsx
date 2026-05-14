@@ -29,12 +29,12 @@ const TrackOrder: React.FC = () => {
 
   return (
     <div className="pt-24 pb-20 px-6 sm:px-6 lg:px-8 max-w-3xl mx-auto min-h-screen bg-fm-bg">
-      <h1 className="font-playfair text-4xl text-fm-text mb-4 text-center">Track Your Order</h1>
-      <p className="text-center font-dm text-fm-text-2 mb-12">
+      <h1 className="font-playfair text-4xl text-white mb-4 text-center">Track Your Order</h1>
+      <p className="text-center font-dm text-white-2 mb-12">
         Enter your tracking tracking ID or registered phone number internally provided during checkout strictly to monitor your parcel.
       </p>
 
-      <div className="bg-white border border-fm-border p-8 mb-8">
+      <div className="bg-navy-mid border border-navy-light p-8 mb-8">
         <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-4">
           <input 
             type="text" 
@@ -55,8 +55,8 @@ const TrackOrder: React.FC = () => {
       </div>
 
       {hasTracked && (
-        <div className="bg-white border border-fm-border p-8 animate-fadeIn">
-          <h2 className="font-playfair text-2xl text-fm-text mb-8 text-center pb-6 border-b border-fm-border">
+        <div className="bg-navy-mid border border-navy-light p-8 animate-fadeIn">
+          <h2 className="font-playfair text-2xl text-white mb-8 text-center pb-6 border-b border-navy-light">
             Status for {identifier.startsWith('#') ? identifier : `#FM-${Math.floor(Math.random()*9000)+1000}`}
           </h2>
           
@@ -68,15 +68,15 @@ const TrackOrder: React.FC = () => {
               <div key={idx} className="relative flex items-center gap-6">
                 <div className={`
                   w-6 h-6 rounded-full flex shrink-0 items-center justify-center relative z-10 
-                  ${step.completed ? 'bg-fm-gold text-white' : (step.active ? 'bg-white border-2 border-fm-gold' : 'bg-white border-2 border-fm-border')}
+                  ${step.completed ? 'bg-fm-gold text-white' : (step.active ? 'bg-navy-mid border-2 border-fm-gold' : 'bg-navy-mid border-2 border-navy-light')}
                 `}>
                   {step.completed && <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                 </div>
                 <div>
-                  <h3 className={`font-dm font-bold uppercase tracking-widest text-sm mb-1 ${step.active ? 'text-fm-text' : 'text-fm-text-3'}`}>
+                  <h3 className={`font-dm font-bold uppercase tracking-widest text-sm mb-1 ${step.active ? 'text-white' : 'text-white-3'}`}>
                     {step.label}
                   </h3>
-                  <p className="font-dm text-sm text-fm-text-2">Contact our WhatsApp hotline (+92 300-7002061) sharing your Order ID and attached proof images depicting the current state.</p>
+                  <p className="font-dm text-sm text-white-2">Contact our WhatsApp hotline (0301-7967300) sharing your Order ID and attached proof images depicting the current state.</p>
                 </div>
               </div>
             ))}

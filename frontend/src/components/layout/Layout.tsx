@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import PromoBar from './PromoBar';
 import CartDrawer from '../ui/CartDrawer';
 import WhatsAppWidget from '../ui/WhatsAppWidget';
 
@@ -11,7 +12,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-bg flex flex-col font-body text-text-primary">
+    <div className="min-h-screen bg-navy-dark flex flex-col font-body text-white">
+      <PromoBar />
       <Navbar />
       <main className="flex-1">
         {children}

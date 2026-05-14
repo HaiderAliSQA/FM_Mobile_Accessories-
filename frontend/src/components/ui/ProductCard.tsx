@@ -17,9 +17,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Auto-select first available size if any, or undefined
-    const firstSize = product.sizes && product.sizes.find(s => !s.isBlocked)?.size;
-    
     addToCart({
       productId: product._id,
       name: product.name,
@@ -27,70 +24,76 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
       quantity: 1,
       image: product.images[0] || '',
       slug: product.slug,
-      size: firstSize,
       color: product.colors?.[0] || 'Original',
     });
   };
 
   const discount = discountPercent(product.price, product.compareAtPrice || 0);
 
+  // Derived Tech Badge logic
+  const getTechBadge = () => {
+    if (product.category === 'chargers') return '20W FAST';
+    if (product.category === 'power-banks') return '20000mAh';
+    if (product.category === 'glass-protectors') return '9D GLASS';
+    if (product.category === 'hands-free' || product.category === 'bluetooth') return 'HD AUDIO';
+    return 'PREMIUM';
+  };
+
   return (
     <div 
-      className="group relative flex flex-col items-center bg-white border border-[#EBEBEB]/50 hover:border-[#EBEBEB] transition-colors" 
-      style={{ transitionDelay: `${(index || 0) * 0.06}s` }}
+      className="group relative flex flex-col bg-navy-mid border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-electric/30 hover:shadow-glow-blue/10" 
+      style={{ transitionDelay: `${(index || 0) * 0.05}s` }}
     >
-      <Link to={`/product/${product.slug}`} className="w-full relative block px-2 pt-2">
+      <Link to={`/product/${product.slug}`} className="w-full relative block">
         {/* IMAGE AREA */}
-        <div className="relative w-full aspect-square overflow-hidden bg-[#fafaf8]">
+        <div className="relative w-full aspect-square overflow-hidden bg-navy-dark/30">
           <img 
             src={product.images[0] || '/placeholder.png'} 
             alt={product.name} 
             loading="lazy"
-            decoding="async"
-            className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105" 
+            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" 
           />
 
-          {/* ADD TO CART BUTTON (slides up on hover) */}
-          <button 
-            className="absolute bottom-0 left-0 right-0 bg-[#1A1714] text-white py-3 md:py-4 text-center text-[10px] md:text-[11px] font-bold tracking-[0.2em] font-dm cursor-pointer transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-20 hover:bg-[#C9A84C] shadow-lg"
-            onClick={handleQuickAdd}
-          >
-            ADD TO CART
-          </button>
-
           {/* BADGES */}
-          <div className="absolute top-0 left-0 flex flex-col z-10">
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+            <span className="bg-electric text-white text-[9px] font-extrabold px-2 py-1 rounded shadow-lg uppercase tracking-widest">
+              {getTechBadge()}
+            </span>
             {discount > 0 && (
-              <span className="bg-[#E52B2B] text-white text-[11px] font-bold px-3 py-1 tracking-widest font-dm">
-                SAVE {discount}%
+              <span className="bg-red-500 text-white text-[9px] font-extrabold px-2 py-1 rounded shadow-lg uppercase tracking-widest">
+                -{discount}%
               </span>
             )}
           </div>
         </div>
 
-        {/* INFO AREA - EXACT CENTERING */}
-        <div className="py-5 flex flex-col items-center text-center w-full px-1">
-          <h3 className="font-dm text-[12px] font-bold text-[#1A1714] tracking-[0.1em] uppercase mb-2.5 line-clamp-1 w-full">
+        {/* INFO AREA */}
+        <div className="p-4 md:p-5 flex flex-col">
+          <h3 className="font-heading text-xs md:text-sm font-bold text-white mb-2 line-clamp-2 min-h-[2.5rem] leading-tight">
             {product.name}
           </h3>
           
-          <div className="flex flex-col items-center w-full">
-            <span className="font-dm text-[13px] font-bold text-[#E52B2B] tracking-widest mb-1.5 transition-colors group-hover:text-[#C9A84C]">
-              {formatPrice(product.price)} PKR
-            </span>
-            {product.compareAtPrice && product.compareAtPrice > product.price && (
-              <span className="font-dm text-[11px] text-[#A3A3A3] line-through tracking-widest opacity-80 decoration-[#A3A3A3]/50">
-                {formatPrice(product.compareAtPrice)} PKR
+          <div className="flex items-center justify-between mt-auto">
+            <div className="flex flex-col">
+              <span className="text-electric font-bold text-sm md:text-base">
+                PKR {formatPrice(product.price)}
               </span>
-            )}
-          </div>
-
-          {/* Star row */}
-          <div className="flex items-center gap-1.5 mt-2.5">
-            <div className="flex text-[#E5C158] text-[11px] tracking-widest">
-              {'★★★★★'}
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="text-gray-500 line-through text-[10px] md:text-xs">
+                  PKR {formatPrice(product.compareAtPrice)}
+                </span>
+              )}
             </div>
-            <span className="font-dm text-[10px] text-[#A3A3A3] font-medium tracking-wider">(0.0)</span>
+            
+            <button 
+              onClick={handleQuickAdd}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-electric/10 text-electric border border-electric/20 rounded-xl hover:bg-electric hover:text-white transition-all overflow-hidden"
+              aria-label="Add to Cart"
+            >
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
         </div>
       </Link>
