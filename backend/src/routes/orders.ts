@@ -143,9 +143,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       }
 
       if (item.quantity > product.stock) {
+        const truncatedName = product.name.length > 40 ? product.name.substring(0, 37) + '...' : product.name;
         res.status(400).json({
           success: false,
-          message: `Insufficient stock for "${product.name}". Available: ${product.stock}`,
+          message: `Insufficient stock for "${truncatedName}". Available: ${product.stock}`,
         });
         return;
       }

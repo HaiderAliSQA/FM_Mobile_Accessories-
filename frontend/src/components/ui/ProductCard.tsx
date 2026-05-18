@@ -85,15 +85,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
               )}
             </div>
             
-            <button 
-              onClick={handleQuickAdd}
-              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-electric/10 text-electric border border-electric/20 rounded-xl hover:bg-electric hover:text-white transition-all overflow-hidden"
-              aria-label="Add to Cart"
-            >
-              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
+            {product.stock > 0 ? (
+              <button 
+                onClick={handleQuickAdd}
+                className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-electric/10 text-electric border border-electric/20 rounded-xl hover:bg-electric hover:text-white transition-all overflow-hidden"
+                aria-label="Add to Cart"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            ) : (
+              <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-navy-dark text-gray-500 border border-white/5 rounded-xl cursor-not-allowed" title="Out of Stock">
+                <span className="text-[10px] font-bold uppercase tracking-tighter">Out</span>
+              </div>
+            )}
           </div>
         </div>
       </Link>

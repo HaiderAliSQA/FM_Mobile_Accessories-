@@ -141,32 +141,43 @@ const ProductDetail: React.FC = () => {
                 </div>
               )}
 
-              {/* Quantity */}
-              <div className="flex items-center gap-6">
-                <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">Quantity</span>
-                <div className="flex items-center h-12 bg-navy-mid border border-white/5 rounded-xl overflow-hidden w-32">
-                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="flex-1 hover:bg-navy-mid/5 transition-colors text-xl">-</button>
-                  <span className="flex-1 text-center font-bold">{quantity}</span>
-                  <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} className="flex-1 hover:bg-navy-mid/5 transition-colors text-xl">+</button>
-                </div>
-              </div>
+              {/* Conditional Rendering based on Stock */}
+              {product.stock > 0 ? (
+                <>
+                  {/* Quantity */}
+                  <div className="flex items-center gap-6">
+                    <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">Quantity</span>
+                    <div className="flex items-center h-12 bg-navy-mid border border-white/5 rounded-xl overflow-hidden w-32">
+                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="flex-1 hover:bg-navy-mid/5 transition-colors text-xl">-</button>
+                      <span className="flex-1 text-center font-bold">{quantity}</span>
+                      <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} className="flex-1 hover:bg-navy-mid/5 transition-colors text-xl">+</button>
+                    </div>
+                  </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-4">
-                <button 
-                  onClick={handleAddToCart}
-                  className="w-full h-16 bg-electric text-white font-bold uppercase tracking-widest rounded-2xl transition-all hover:shadow-glow-blue active:scale-95"
-                >
-                  Add to Cart
-                </button>
-                <button 
-                  onClick={() => { handleAddToCart(); navigate('/checkout'); }}
-                  className="w-full h-16 bg-gold text-navy-dark font-bold uppercase tracking-widest rounded-2xl transition-all hover:bg-blue-400 active:scale-95 flex items-center justify-center gap-3 animate-pulse-glow"
-                >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                  Buy It Now
-                </button>
-              </div>
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-4">
+                    <button 
+                      onClick={handleAddToCart}
+                      className="w-full h-16 bg-electric text-white font-bold uppercase tracking-widest rounded-2xl transition-all hover:shadow-glow-blue active:scale-95"
+                    >
+                      Add to Cart
+                    </button>
+                    <button 
+                      onClick={() => { handleAddToCart(); navigate('/checkout'); }}
+                      className="w-full h-16 bg-gold text-navy-dark font-bold uppercase tracking-widest rounded-2xl transition-all hover:bg-blue-400 active:scale-95 flex items-center justify-center gap-3 animate-pulse-glow"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                      Buy It Now
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-4 mt-4">
+                  <div className="w-full h-16 flex items-center justify-center bg-gray-800/50 text-gray-400 font-bold uppercase tracking-widest rounded-2xl border border-gray-700/50 cursor-not-allowed">
+                    Out of Stock
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Trust Markers */}
