@@ -40,9 +40,9 @@ const ContactUs: React.FC = () => {
                 <div>
                   <h4 className="font-dm font-bold text-sm text-white uppercase tracking-widest mb-1">Address</h4>
                   <p className="font-dm text-white-2 leading-relaxed">
-                    Jhumra Chowk, Near MCB Bank<br />
-                    Alamgir Road, Left Street No. 1<br />
-                    Chiniot, Pakistan
+                    Fatima Masjeed <br />
+                    Lahore Road<br />
+                    Chiniot
                   </p>
                 </div>
               </div>

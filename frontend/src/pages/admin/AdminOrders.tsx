@@ -39,9 +39,9 @@ const AdminOrders: React.FC = () => {
       case 'failed':
       case 'cancelled':
       case 'returned':
-        return 'bg-red-50 text-fm-error border-red-100';
+        return 'bg-red-50 text-red-600 border-red-100';
       default:
-        return 'bg-navy-mid text-white-3 border-navy-light';
+        return 'bg-navy-mid text-gray-400 border-navy-light';
     }
   };
 
@@ -52,7 +52,7 @@ const AdminOrders: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="font-playfair text-white text-[32px] font-bold tracking-tight">Customer Orders</h1>
-            <p className="text-white-3 tracking-[0.2em] text-[10px] uppercase font-bold">Fulfillment Center • {data?.data?.total || 0} transactions</p>
+            <p className="text-gray-400 tracking-[0.2em] text-[10px] uppercase font-bold">Fulfillment Center • {data?.data?.total || 0} transactions</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-2xl justify-end">
@@ -62,9 +62,9 @@ const AdminOrders: React.FC = () => {
                 placeholder="Search by Order #, Name or Email..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full bg-navy-mid border border-navy-light px-10 py-3 text-[13px] font-dm text-white placeholder-fm-text-3 outline-none focus:border-fm-gold transition-all shadow-sm"
+                className="w-full bg-navy-mid border border-navy-light px-10 py-3 text-[13px] font-dm text-white placeholder-gray-500 outline-none focus:border-gold transition-all shadow-sm"
               />
-              <svg className="w-4 h-4 text-white-3 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -93,16 +93,16 @@ const AdminOrders: React.FC = () => {
         {/* Table */}
         <div className="overflow-x-auto min-h-[400px]">
           {isLoading ? (
-            <div className="p-20 text-center text-white-3 font-dm skeleton-shimmer text-[15px]">Syncing database...</div>
+            <div className="p-20 text-center text-gray-400 font-dm skeleton-shimmer text-[15px]">Syncing database...</div>
           ) : orders.length === 0 ? (
-            <div className="p-32 text-center text-white-3 font-dm text-[12px] tracking-[0.3em] uppercase">
+            <div className="p-32 text-center text-gray-400 font-dm text-[12px] tracking-[0.3em] uppercase">
               <div className="text-6xl mb-6 opacity-20">📦</div>
               <h3 className="text-white font-playfair text-[26px] mb-2 font-bold">No Records Found</h3>
-              <p className="text-white-3">Adjust your search criteria to locate specific orders.</p>
+              <p className="text-gray-400">Adjust your search criteria to locate specific orders.</p>
             </div>
           ) : (
             <table className="w-full text-left text-[14px] whitespace-nowrap border-separate border-spacing-0">
-              <thead className="bg-navy-mid text-white-3 uppercase tracking-[0.2em] text-[10px] font-bold border-b border-navy-light sticky top-[80px] z-20 shadow-xs">
+              <thead className="bg-navy-mid text-gray-400 uppercase tracking-[0.2em] text-[10px] font-bold border-b border-navy-light sticky top-[80px] z-20 shadow-xs">
                 <tr>
                   <th className="px-4 py-5 w-10 text-center text-electric">#</th>
                   <th className="px-4 py-5">Order ID</th>
@@ -113,23 +113,23 @@ const AdminOrders: React.FC = () => {
                   <th className="px-4 py-5 text-center">Fulfillment Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-fm-border">
+              <tbody className="divide-y divide-navy-light">
                 {orders.map((order, index) => (
-                  <tr key={order._id} className="hover:bg-fm-surface-2 transition-colors group">
-                    <td className="px-4 py-6 text-center text-white-3 font-bold text-[11px]">
+                  <tr key={order._id} className="hover:bg-navy-light/30 transition-colors group">
+                    <td className="px-4 py-6 text-center text-gray-400 font-bold text-[11px]">
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-4 py-6">
                       <div className="font-bold text-white text-[15px] font-playfair">#{order.orderNumber}</div>
-                      <div className="text-white-3 text-[10px] mt-1 uppercase font-bold tracking-widest">{order.items.length} Product(s)</div>
+                      <div className="text-gray-400 text-[10px] mt-1 uppercase font-bold tracking-widest">{order.items.length} Product(s)</div>
                     </td>
-                    <td className="px-4 py-6 text-white-3 text-[12px] font-medium">
+                    <td className="px-4 py-6 text-gray-400 text-[12px] font-medium">
                       {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-4 py-6">
                       <div className="flex flex-col">
                         <span className="font-bold text-white text-[13px] uppercase tracking-wide">{order.customerName}</span>
-                        <span className="text-white-3 text-[11px] font-medium">{order.customerPhone}</span>
+                        <span className="text-gray-400 text-[11px] font-medium">{order.customerPhone}</span>
                       </div>
                     </td>
                     <td className="px-4 py-6">
@@ -176,16 +176,16 @@ const AdminOrders: React.FC = () => {
         {/* 2. ADVANCED PAGINATION FOOTER */}
         <div className="p-4 border-t border-navy-light flex flex-col md:flex-row justify-between items-center gap-6 bg-navy-mid">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <span className="text-[11px] text-white-3 font-black uppercase tracking-[0.2em]">
+            <span className="text-[11px] text-gray-400 font-black uppercase tracking-[0.2em]">
               Showing Page {Math.max(0, page - 1)} of {Math.max(0, totalPages - 1)}
             </span>
             
             <div className="flex items-center gap-3 border-l border-navy-light pl-6">
-              <span className="text-[10px] font-black uppercase tracking-widest text-white-3">Rows:</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Rows:</span>
               <select
                 value={limit}
                 onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="bg-navy-mid border border-navy-light text-[11px] font-black px-3 py-1 outline-none focus:border-fm-gold transition-colors cursor-pointer"
+                className="bg-navy-mid border border-navy-light text-[11px] font-black px-3 py-1 outline-none focus:border-gold transition-colors cursor-pointer"
               >
                 {[10, 20, 30, 50, 100].map(val => (
                   <option key={val} value={val}>{val}</option>

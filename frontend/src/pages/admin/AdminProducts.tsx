@@ -120,7 +120,7 @@ const AdminProducts: React.FC = () => {
             </div>
           ) : (
             <table className="w-full text-left text-[14px] whitespace-nowrap border-separate border-spacing-0">
-              <thead className="bg-navy-mid text-white-3 uppercase tracking-[0.2em] text-[10px] font-bold border-b border-navy-light sticky top-[80px] z-20 shadow-xs">
+              <thead className="bg-navy-mid text-gray-400 uppercase tracking-[0.2em] text-[10px] font-bold border-b border-navy-light sticky top-[80px] z-20 shadow-xs">
                 <tr>
                   <th className="px-4 py-5 w-10 text-center text-electric">#</th>
                   <th className="px-4 py-5">Product Details</th>
@@ -132,19 +132,19 @@ const AdminProducts: React.FC = () => {
                   <th className="px-4 py-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-fm-border">
+              <tbody className="divide-y divide-navy-light">
                 {products.map((product, index) => (
-                  <tr key={product._id} className={`hover:bg-fm-surface-2 transition-colors group ${product.isDiscontinued ? 'opacity-40 grayscale-[0.5]' : ''}`}>
-                    <td className="px-4 py-6 text-center text-white-3 font-bold text-[11px]">
+                  <tr key={product._id} className={`hover:bg-navy-light/30 transition-colors group ${product.isDiscontinued ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+                    <td className="px-4 py-6 text-center text-gray-400 font-bold text-[11px]">
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-4 py-6">
                       <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-[#F5F3EE] p-1 border border-navy-light group-hover:border-fm-gold/50 transition-colors">
+                        <div className="w-16 h-16 bg-navy-light p-1 border border-navy-light group-hover:border-gold/50 transition-colors">
                           {product.images[0] ? (
-                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
+                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[8px] font-bold uppercase text-white-3">NO IMAGE</div>
+                            <div className="w-full h-full flex items-center justify-center text-[8px] font-bold uppercase text-gray-400">NO IMAGE</div>
                           )}
                         </div>
                         <div className="flex flex-col gap-1">
@@ -201,26 +201,26 @@ const AdminProducts: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-6">
-                      <button onClick={() => handleToggle(product._id, 'visibility')} className={`w-12 h-6 rounded-full relative transition-all duration-300 ${product.isVisible ? 'bg-fm-text' : 'bg-fm-border'}`}>
+                      <button onClick={() => handleToggle(product._id, 'visibility')} className={`w-12 h-6 rounded-full relative transition-all duration-300 ${product.isVisible ? 'bg-electric' : 'bg-navy-light'}`}>
                         <span className={`absolute top-1 w-4 h-4 rounded-full bg-navy-mid transition-all duration-300 shadow-sm ${product.isVisible ? 'left-[26px]' : 'left-1'}`} />
                       </button>
                     </td>
                     <td className="px-4 py-6">
-                      <button onClick={() => handleToggle(product._id, 'featured')} className={`w-12 h-6 rounded-full relative transition-all duration-300 ${product.isFeatured ? 'bg-fm-gold' : 'bg-fm-border'}`}>
+                      <button onClick={() => handleToggle(product._id, 'featured')} className={`w-12 h-6 rounded-full relative transition-all duration-300 ${product.isFeatured ? 'bg-gold' : 'bg-navy-light'}`}>
                         <span className={`absolute top-1 w-4 h-4 rounded-full bg-navy-mid transition-all duration-300 shadow-sm ${product.isFeatured ? 'left-[26px]' : 'left-1'}`} />
                       </button>
                     </td>
                     <td className="px-4 py-6">
-                      <button onClick={() => handleToggle(product._id, 'discontinued')} className={`w-12 h-6 rounded-full relative transition-all duration-300 ${product.isDiscontinued ? 'bg-fm-error' : 'bg-fm-border'}`}>
+                      <button onClick={() => handleToggle(product._id, 'discontinued')} className={`w-12 h-6 rounded-full relative transition-all duration-300 ${product.isDiscontinued ? 'bg-fm-red' : 'bg-navy-light'}`}>
                         <span className={`absolute top-1 w-4 h-4 rounded-full bg-navy-mid transition-all duration-300 shadow-sm ${product.isDiscontinued ? 'left-[26px]' : 'left-1'}`} />
                       </button>
                     </td>
                     <td className="px-4 py-6 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link to={`/admin/products/edit/${product._id}`} className="bg-navy-mid p-2.5 border border-navy-light hover:border-fm-gold hover:text-electric transition-all shadow-sm" title="Edit">
+                        <Link to={`/admin/products/edit/${product._id}`} className="bg-navy-mid p-2.5 border border-navy-light hover:border-gold hover:text-electric transition-all shadow-sm" title="Edit">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </Link>
-                        <button onClick={() => handleDelete(product._id, product.name)} className="bg-navy-mid p-2.5 border border-navy-light hover:border-fm-error hover:text-fm-error transition-all shadow-sm" title="Delete">
+                        <button onClick={() => handleDelete(product._id, product.name)} className="bg-navy-mid p-2.5 border border-navy-light hover:border-fm-red hover:text-fm-red transition-all shadow-sm" title="Delete">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                       </div>

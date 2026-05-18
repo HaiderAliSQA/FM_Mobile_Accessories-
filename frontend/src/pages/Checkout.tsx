@@ -16,7 +16,7 @@ const checkoutSchema = z.object({
     street: z.string().min(5, 'Street address is required'),
     city: z.string().min(2, 'City is required'),
     state: z.string().min(2, 'State/Province is required'),
-    zipCode: z.string().min(3, 'Postal code is required'),
+    zipCode: z.string().optional(),
     country: z.literal('Pakistan', {
       errorMap: () => ({ message: 'Shipping is currently limited to Pakistan' }),
     }),
@@ -59,7 +59,7 @@ const Checkout: React.FC = () => {
         customerPhone: data.customerPhone,
         customerAddress: data.shippingAddress.street,
         customerCity: data.shippingAddress.city,
-        customerPostalCode: data.shippingAddress.zipCode,
+        customerPostalCode: data.shippingAddress.zipCode || '',
         paymentMethod,
         items: items.map((item) => ({
           productId: item.productId,
@@ -167,6 +167,7 @@ const Checkout: React.FC = () => {
                         placeholder="e.g. Karachi"
                         className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
                       />
+                      {errors.shippingAddress?.city && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.shippingAddress.city.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Province/State</label>
@@ -175,6 +176,7 @@ const Checkout: React.FC = () => {
                         placeholder="Province"
                         className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
                       />
+                      {errors.shippingAddress?.state && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.shippingAddress.state.message}</p>}
                     </div>
                   </div>
                 </div>

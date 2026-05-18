@@ -154,8 +154,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         productId: product._id,
         name: product.name,
         price: Number(product.price), // FORCE Number
-        size: Number(item.size),
-        color: String(item.color),
+        size: item.size ? Number(item.size) : undefined,
+        color: item.color ? String(item.color) : undefined,
         quantity: Number(item.quantity), // FORCE Number
         image: product.images?.[0] || '',
       });
