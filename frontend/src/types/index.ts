@@ -210,3 +210,157 @@ export interface FilterState {
   sortBy: SortOption;
   page: number;
 }
+
+// ─── WHOLESALE / B2B TYPES ───────────────────────────────────────────────────
+
+export interface ShopKeeper {
+  _id: string;
+  name: string;
+  shopName: string;
+  phone: string;
+  whatsapp?: string;
+  city: string;
+  address?: string;
+  creditLimit: number;
+  isActive: boolean;
+  joinedAt: string;
+  totalOrdered: number;
+  totalPaid: number;
+  totalDue: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WholesaleOrderItem {
+  productId?: string;
+  name: string;
+  brand?: string;
+  image?: string;
+  price: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export type WholesalePaymentStatus = 'unpaid' | 'partial' | 'paid';
+export type WholesaleOrderStatus = 'pending' | 'confirmed' | 'delivered' | 'cancelled';
+export type WholesalePaymentSchedule = 'weekly' | 'monthly' | 'custom' | 'immediate';
+export type WholesalePaymentMethod = 'cash' | 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cheque';
+
+export interface WholesaleOrder {
+  _id: string;
+  orderId: string;
+  shopKeeper: ShopKeeper;
+  items: WholesaleOrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  discount: number;
+  totalAmount: number;
+  totalPaid: number;
+  totalDue: number;
+  paymentStatus: WholesalePaymentStatus;
+  orderStatus: WholesaleOrderStatus;
+  paymentSchedule: WholesalePaymentSchedule;
+  expectedPaymentDate?: string;
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WholesalePayment {
+  _id: string;
+  order: string | WholesaleOrder;
+  shopKeeper: string | ShopKeeper;
+  amount: number;
+  method: WholesalePaymentMethod;
+  transactionId?: string;
+  paymentDate: string;
+  installmentNote?: string;
+  recordedBy: string;
+  orderTotalAtTime: number;
+  paidBeforeThis: number;
+  dueAfterThis: number;
+  createdAt: string;
+}
+
+export interface LedgerEntry {
+  date: string;
+  type: 'order' | 'payment';
+  description: string;
+  amount: number;
+  runningDue: number;
+  referenceId: string;
+  method?: string;
+}
+
+export interface ShopKeepersResponse {
+  success: boolean;
+  data: {
+    shopKeepers: ShopKeeper[];
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+    summary: {
+      totalCount: number;
+      totalActiveCount: number;
+      totalDueAll: number;
+      thisMonthCollected: number;
+    };
+  };
+}
+
+export interface WholesaleOrdersResponse {
+  success: boolean;
+  data: {
+    orders: WholesaleOrder[];
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+    stats: {
+      totalValue: number;
+      totalCollected: number;
+      totalDue: number;
+      unpaidCount: number;
+      partialCount: number;
+    };
+  };
+}
+
+export interface WholesalePaymentsResponse {
+  success: boolean;
+  data: {
+    payments: WholesalePayment[];
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+  };
+}
+
+export interface WholesaleStatsResponse {
+  success: boolean;
+  data: {
+    totalOrders: number;
+    totalValue: number;
+    totalCollected: number;
+    totalDue: number;
+    unpaidCount: number;
+    partialCount: number;
+    activeShopKeepers: number;
+    overdueOrders: WholesaleOrder[];
+    recentPayments: WholesalePayment[];
+  };
+}
+
+export interface RecordPaymentPayload {
+  orderId: string;
+  shopKeeperId: string;
+  amount: number;
+  method: WholesalePaymentMethod;
+  transactionId?: string;
+  paymentDate?: string;
+  installmentNote?: string;
+}
+

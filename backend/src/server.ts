@@ -12,6 +12,9 @@ import productRoutes from './routes/products';
 import orderRoutes from './routes/orders';
 import paymentRoutes from './routes/payment';
 import uploadRoutes from './routes/upload';
+import shopKeeperRoutes from './routes/shopKeepers';
+import wholesaleOrderRoutes from './routes/wholesaleOrders';
+import wholesalePaymentRoutes from './routes/wholesalePayments';
 import errorHandler, { notFoundHandler } from './middleware/errorHandler';
 import customLogger from './middleware/customLogger';
 
@@ -62,7 +65,7 @@ app.get('/api/health', (_req: Request, res: Response): void => {
   res.status(200).json({
     status: 'ok',
     success: true,
-    message: 'FM Mobile Accessories API is running',
+    message: 'FH Mobile Accessories API is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV ?? 'development',
@@ -76,6 +79,11 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
+
+// Wholesale / Admin B2B Routes
+app.use('/api/admin/shopkeepers', shopKeeperRoutes);
+app.use('/api/admin/wholesale-orders', wholesaleOrderRoutes);
+app.use('/api/admin/wholesale-payments', wholesalePaymentRoutes);
 
 // ─── Error Handling ───────────────────────────────────────────────────────────
 
@@ -91,7 +99,7 @@ const startServer = async (): Promise<void> => {
     configureCloudinary();
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`\n🚀 FM Mobile Accessories API`);
+      console.log(`\n🚀 FH Mobile Accessories API`);
       console.log(`   Environment : ${process.env.NODE_ENV ?? 'development'}`);
       console.log(`   Port        : ${PORT}`);
       console.log(`   Health      : http://localhost:${PORT}/api/health`);

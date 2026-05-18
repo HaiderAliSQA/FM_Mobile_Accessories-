@@ -41,7 +41,7 @@ const AdminLogin: React.FC = () => {
       <div className="max-w-md w-full space-y-8 z-10 bg-navy-mid/80 backdrop-blur-xl p-12 rounded-[3.5rem] border border-white/5 shadow-2xl animate-fade-in">
         <div className="text-center">
             <span className="font-heading text-electric text-3xl font-extrabold tracking-tighter italic">
-              FM <span className="text-white">PORTAL</span>
+              FH <span className="text-white">PORTAL</span>
             </span>
           <p className="text-gray-600 text-[10px] font-extrabold uppercase tracking-[6px] mt-2">
             Administrator Access

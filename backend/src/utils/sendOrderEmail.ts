@@ -58,7 +58,7 @@ export const generateOrderPDF = (order: OrderData): Promise<Buffer> => {
         .fillColor('#FFFFFF')
         .font('Helvetica-Bold')
         .fontSize(22)
-        .text('FM MOBILE ACCESSORIES', 50, 28, { align: 'center', width: pageWidth });
+        .text('FH MOBILE ACCESSORIES', 50, 28, { align: 'center', width: pageWidth });
       doc
         .fillColor(GOLD)
         .font('Helvetica')
@@ -265,7 +265,7 @@ export const generateOrderPDF = (order: OrderData): Promise<Buffer> => {
       } else if (method === 'easypaisa') {
         payText = `Easypaisa Number: +92 300 7002 061\nAccount Title: Shahbaz Arif\nAmount: PKR ${order.totalAmount.toLocaleString()}\n${order.transactionId ? `Transaction ID: ${order.transactionId}` : 'Please send payment and reply with your Transaction ID on WhatsApp.'}`;
       } else if (method === 'bank_transfer') {
-        payText = `Bank: Meezan Bank\nAccount Number: 48010112475304\nAccount Title: FM Mobile Accessories\nAmount: PKR ${order.totalAmount.toLocaleString()}\n${order.transactionId ? `Reference ID: ${order.transactionId}` : 'Please transfer and reply with your Transaction Reference on WhatsApp.'}`;
+        payText = `Bank: Meezan Bank\nAccount Number: 48010112475304\nAccount Title: FH Mobile Accessories\nAmount: PKR ${order.totalAmount.toLocaleString()}\n${order.transactionId ? `Reference ID: ${order.transactionId}` : 'Please transfer and reply with your Transaction Reference on WhatsApp.'}`;
       }
 
       doc.fillColor(DARK).font('Helvetica').fontSize(9)
@@ -281,7 +281,7 @@ export const generateOrderPDF = (order: OrderData): Promise<Buffer> => {
         .stroke();
 
       doc.fillColor(DARK).font('Helvetica-Bold').fontSize(9)
-        .text('Thank you for shopping with FM Mobile Accessories!', 50, footerY + 10, {
+        .text('Thank you for shopping with FH Mobile Accessories!', 50, footerY + 10, {
           align: 'center', width: pageWidth,
         });
       doc.fillColor(GRAY).font('Helvetica').fontSize(8)
@@ -289,7 +289,7 @@ export const generateOrderPDF = (order: OrderData): Promise<Buffer> => {
           align: 'center', width: pageWidth,
         });
       doc.fillColor(GRAY).font('Helvetica').fontSize(7)
-        .text('FM Mobile Accessories — Premium Tech Gear — Pakistan', 50, footerY + 42, {
+        .text('FH Mobile Accessories — Premium Tech Gear — Pakistan', 50, footerY + 42, {
           align: 'center', width: pageWidth,
         });
 
@@ -357,7 +357,7 @@ export const sendOrderEmail = async (order: OrderData): Promise<void> => {
         <div style="background:#EFF6FF;border:1px solid #3B82F6;padding:16px;margin-top:16px;border-radius:4px;">
           <strong style="color:#1E40AF;">🏦 Bank Transfer (Meezan Bank)</strong><br>
           <span style="color:#1E40AF;font-size:13px;">
-            Account: <strong>48010112475304</strong> | Title: <strong>FM Mobile Accessories</strong><br>
+            Account: <strong>48010112475304</strong> | Title: <strong>FH Mobile Accessories</strong><br>
             Amount: <strong>PKR ${order.totalAmount.toLocaleString()}</strong><br>
             ${order.transactionId ? `Reference ID: <strong>${order.transactionId}</strong>` : '⚠️ Payment verification pending'}
           </span>
@@ -393,7 +393,7 @@ export const sendOrderEmail = async (order: OrderData): Promise<void> => {
         <tr>
           <td style="background:#1A1714;padding:28px 40px;text-align:center;">
             <h1 style="color:#FFFFFF;font-size:22px;margin:0;letter-spacing:4px;font-family:Georgia,serif;">
-              FM MOBILE ACCESSORIES
+              FH MOBILE ACCESSORIES
             </h1>
             <p style="color:#B8860B;font-size:11px;margin:6px 0 0;letter-spacing:2px;">
               YOUR ONE-STOP MOBILE SHOP
@@ -504,7 +504,7 @@ export const sendOrderEmail = async (order: OrderData): Promise<void> => {
         <tr>
           <td style="background:#1A1714;padding:20px 40px;text-align:center;">
             <p style="color:#9C9890;font-size:11px;margin:0;">
-              This email was sent automatically by FM Mobile Accessories order system.
+              This email was sent automatically by FH Mobile Accessories order system.
             </p>
             <p style="color:#C9A84C;font-size:11px;margin:8px 0 0;">
               WhatsApp: +92 300 700 2061 | Return Policy: 7-day exchange on unused items
@@ -521,7 +521,7 @@ export const sendOrderEmail = async (order: OrderData): Promise<void> => {
 
     // Send email
     const mailOptions = {
-      from: `"FM Mobile Accessories" <${process.env.EMAIL_USER}>`,
+      from: `"FH Mobile Accessories" <${process.env.EMAIL_USER}>`,
       to: process.env.ADMIN_EMAIL || 'Hafizhaideraliuet@gmail.com',
       subject: `🛍️ New Order — ${order.orderNumber} — PKR ${order.totalAmount.toLocaleString()}`,
       html: htmlEmail,

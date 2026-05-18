@@ -65,7 +65,7 @@ router.post('/jazzcash', async (req: Request, res: Response): Promise<void> => {
     const salt = process.env.JAZZCASH_INTEGRITY_SALT ?? '';
     const jazzcashUrl = process.env.JAZZCASH_URL ?? 'https://sandbox.jazzcash.com.pk/ApplicationAPI/API/2.0/Purchase/DoMWalletTransaction';
 
-    const txnRefNo = `KM${Date.now()}`;
+    const txnRefNo = `FH${Date.now()}`;
     const now = new Date();
     const txnDateTime = formatDateTime(now);
     const txnExpiryDateTime = addOneHour(txnDateTime);
@@ -82,7 +82,7 @@ router.post('/jazzcash', async (req: Request, res: Response): Promise<void> => {
       pp_TxnCurrency: 'PKR',
       pp_TxnDateTime: txnDateTime,
       pp_BillReference: orderId,
-      pp_Description: 'FM Mobile Accessories Order',
+      pp_Description: 'FH Mobile Accessories Order',
       pp_TxnExpiryDateTime: txnExpiryDateTime,
       pp_MobileNumber: customerPhone,
       pp_CNIC: '',
@@ -176,7 +176,7 @@ router.post('/easypaisa', async (req: Request, res: Response): Promise<void> => 
     const storeId = process.env.EASYPAISA_STORE_ID ?? '';
     const hashKey = process.env.EASYPAISA_HASH_KEY ?? '';
 
-    const txnRefNo = `KM${Date.now()}`;
+    const txnRefNo = `FH${Date.now()}`;
     const now = new Date();
     const orderDate = formatDateTime(now);
 
@@ -190,7 +190,7 @@ router.post('/easypaisa', async (req: Request, res: Response): Promise<void> => 
       expiryDate: addOneHour(orderDate),
       tokenExpiry: addOneHour(orderDate),
       bankIdentificationNumber: '',
-      description: 'FM Mobile Accessories Order',
+      description: 'FH Mobile Accessories Order',
     };
 
     const sortedKeys = Object.keys(payload).sort();

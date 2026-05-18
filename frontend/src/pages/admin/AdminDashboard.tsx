@@ -2,10 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetOrdersQuery } from '../../store/api/ordersApi';
 import { useGetAdminProductsQuery, useGetLowStockProductsQuery } from '../../store/api/productsApi';
+import { useGetWholesaleStatsQuery } from '../../store/api/wholesaleApi';
 import { formatPrice } from '../../utils/formatPrice';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { data: wholesaleStats } = useGetWholesaleStatsQuery();
+  const ws = wholesaleStats?.data;
 
   // --- DATE FILTER STATE ---
   const todayStr = new Date().toISOString().split('T')[0];
@@ -126,6 +129,77 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="bg-navy-dark min-h-screen p-6 font-dm text-white">
+      
+      {/* 0. WHOLESALE KPI ROW */}
+      {ws && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Wholesale Overview</h2>
+            <button onClick={() => navigate('/admin/wholesale-orders')} className="text-[10px] font-black uppercase tracking-widest text-electric hover:underline">View All →</button>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-navy-mid border border-red-900/40 border-l-4 border-l-red-500 p-5 rounded-xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Due 🔴</p>
+              <h3 className="text-2xl font-bold font-heading text-red-400">{formatPrice(ws.totalDue)}</h3>
+              <p className="text-[10px] text-gray-500 mt-1">{ws.unpaidCount + ws.partialCount} unpaid/partial orders</p>
+            </div>
+            <div className="bg-navy-mid border border-navy-light border-l-4 border-l-emerald-500 p-5 rounded-xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Collected</p>
+              <h3 className="text-2xl font-bold font-heading text-emerald-400">{formatPrice(ws.totalCollected)}</h3>
+              <p className="text-[10px] text-gray-500 mt-1">{ws.totalOrders} total orders</p>
+            </div>
+            <div className="bg-navy-mid border border-navy-light border-l-4 border-l-electric p-5 rounded-xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Unpaid Orders</p>
+              <h3 className="text-2xl font-bold font-heading text-white">{ws.unpaidCount}</h3>
+              <button onClick={() => navigate('/admin/wholesale-orders?paymentStatus=unpaid')} className="text-[10px] text-electric hover:underline mt-1">View →</button>
+            </div>
+            <div className="bg-navy-mid border border-navy-light border-l-4 border-l-navy-light p-5 rounded-xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Shop Keepers</p>
+              <h3 className="text-2xl font-bold font-heading text-white">{ws.activeShopKeepers}</h3>
+              <button onClick={() => navigate('/admin/shopkeepers')} className="text-[10px] text-electric hover:underline mt-1">Manage →</button>
+            </div>
+          </div>
+
+          {/* Overdue payments */}
+          {ws.overdueOrders && ws.overdueOrders.length > 0 && (
+            <div className="mt-4 bg-navy-mid border border-red-900/30 rounded-xl overflow-hidden">
+              <div className="px-5 py-3 border-b border-red-900/30 flex items-center justify-between">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-red-400">⚠️ Overdue Payments</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left whitespace-nowrap text-[12px]">
+                  <thead className="bg-navy-dark/50 border-b border-navy-light">
+                    <tr>
+                      {['Shop Name', 'Due Amount', 'Expected Date', 'Action'].map((h) => (
+                        <th key={h} className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-navy-light">
+                    {ws.overdueOrders.map((o) => {
+                      const sk = typeof o.shopKeeper === 'object' ? o.shopKeeper : null;
+                      const daysOverdue = o.expectedPaymentDate ? Math.floor((Date.now() - new Date(o.expectedPaymentDate).getTime()) / 86400000) : 0;
+                      return (
+                        <tr key={o._id} className="hover:bg-navy-light/20">
+                          <td className="px-4 py-2.5 text-white font-bold">{sk?.shopName || '—'}</td>
+                          <td className="px-4 py-2.5 text-red-400 font-bold">{formatPrice(o.totalDue)}</td>
+                          <td className="px-4 py-2.5 text-gray-400">
+                            {o.expectedPaymentDate ? new Date(o.expectedPaymentDate).toLocaleDateString('en-PK') : '—'}
+                            {daysOverdue > 0 && <span className="ml-2 text-red-400 font-bold text-[10px]">({daysOverdue}d overdue)</span>}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <button onClick={() => navigate(`/admin/wholesale-orders/${o._id}`)} className="text-electric text-[11px] font-bold hover:underline">View →</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       
       {/* 1. ALERT STRIP */}
       {alerts.length > 0 && (
@@ -309,7 +383,7 @@ const AdminDashboard: React.FC = () => {
                     className="group hover:bg-navy-dark transition-colors cursor-pointer border-b border-navy-light last:border-0"
                   >
                     <td className="px-2 py-4">
-                      <p className="text-[11px] font-black text-electric mb-0.5">#{order.orderNumber}</p>
+                      <p className="text-[11px] font-black text-electric mb-0.5">#{order.orderNumber ? order.orderNumber.replace(/^KM-/, 'FH-') : ''}</p>
                       <p className="text-[10px] text-gray-400 font-bold">
                         {new Date(order.createdAt).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>

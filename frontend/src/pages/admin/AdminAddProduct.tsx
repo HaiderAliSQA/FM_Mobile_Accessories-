@@ -136,7 +136,7 @@ const AdminAddProduct: React.FC = () => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="font-playfair text-white text-3xl font-semibold tracking-wide">Add New Product</h1>
-          <p className="text-gray-300 mt-2 text-sm tracking-wider">Expand your FM Mobile collection</p>
+          <p className="text-gray-300 mt-2 text-sm tracking-wider">Expand your FH Mobile collection</p>
         </div>
         <button
           type="button"

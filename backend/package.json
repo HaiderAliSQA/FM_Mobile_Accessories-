@@ -1,7 +1,7 @@
 {
   "name": "fmsmart-backend",
   "version": "1.0.0",
-  "description": "FM Mobile Accessories - Backend API",
+  "description": "FH Mobile Accessories - Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec ts-node src/server.ts",

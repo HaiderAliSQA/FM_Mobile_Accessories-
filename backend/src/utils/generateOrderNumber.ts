@@ -3,7 +3,7 @@ import Order from '../models/Order';
 
 const generateOrderNumber = async (): Promise<string> => {
   const year = new Date().getFullYear();
-  const prefix = `KM-${year}-`;
+  const prefix = `FH-${year}-`;
 
   // Find the last order for this year to get the highest sequence
   const lastOrder = await Order.findOne({

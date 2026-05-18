@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
           <div className="flex flex-col space-y-6">
             <Link to="/" className="flex flex-col">
               <span className="font-heading text-2xl font-bold tracking-tight">
-                <span className="text-electric">FM</span> Mobile Accessories
+                <span className="text-electric">FH</span> Mobile Accessories
               </span>
               <span className="text-gray-400 text-sm mt-1 uppercase tracking-widest font-medium">
                 Your One-Stop Mobile Shop
@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
           <p className="text-gray-500 text-xs">
-            © {new Date().getFullYear()} FM Mobile Accessories. All rights reserved.
+            © {new Date().getFullYear()} FH Mobile Accessories. All rights reserved.
           </p>
           <div className="flex space-x-6 text-xs text-gray-400">
             <Link to="/shipping-policy" className="hover:text-electric">Shipping</Link>

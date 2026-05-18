@@ -30,6 +30,15 @@ const AdminProducts   = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminAddProduct = lazy(() => import('./pages/admin/AdminAddProduct'));
 const AdminEditProduct= lazy(() => import('./pages/admin/AdminEditProduct'));
 const AdminOrders     = lazy(() => import('./pages/admin/AdminOrders'));
+// Wholesale
+const AdminShopKeepers         = lazy(() => import('./pages/admin/AdminShopKeepers'));
+const AdminShopKeeperLedger    = lazy(() => import('./pages/admin/AdminShopKeeperLedger'));
+const AdminWholesaleOrders     = lazy(() => import('./pages/admin/AdminWholesaleOrders'));
+const AdminWholesaleOrderDetail= lazy(() => import('./pages/admin/AdminWholesaleOrderDetail'));
+const AdminNewWholesaleOrder   = lazy(() => import('./pages/admin/AdminNewWholesaleOrder'));
+const AdminWholesalePayments   = lazy(() => import('./pages/admin/AdminWholesalePayments'));
+
+
 
 const adminFallback = (
   <div style={{
@@ -80,6 +89,15 @@ const App: React.FC = () => {
           <Route path="products/add" element={<Suspense fallback={adminFallback}><AdminAddProduct /></Suspense>} />
           <Route path="products/edit/:id" element={<Suspense fallback={adminFallback}><AdminEditProduct /></Suspense>} />
           <Route path="orders" element={<Suspense fallback={adminFallback}><AdminOrders /></Suspense>} />
+          {/* Wholesale Routes */}
+          <Route path="shopkeepers" element={<Suspense fallback={adminFallback}><AdminShopKeepers /></Suspense>} />
+          <Route path="shopkeepers/:id" element={<Suspense fallback={adminFallback}><AdminShopKeeperLedger /></Suspense>} />
+          <Route path="wholesale-orders" element={<Suspense fallback={adminFallback}><AdminWholesaleOrders /></Suspense>} />
+          <Route path="wholesale-orders/new" element={<Suspense fallback={adminFallback}><AdminNewWholesaleOrder /></Suspense>} />
+          <Route path="wholesale-orders/:id" element={<Suspense fallback={adminFallback}><AdminWholesaleOrderDetail /></Suspense>} />
+          <Route path="wholesale-payments" element={<Suspense fallback={adminFallback}><AdminWholesalePayments /></Suspense>} />
+
+
         </Route>
 
         {/* Public Routes with Layout */}

@@ -29,19 +29,19 @@ const AdminOrders: React.FC = () => {
     switch (status) {
       case 'paid':
       case 'delivered':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+        return 'bg-emerald-950/40 text-emerald-400 border-emerald-800/60';
       case 'pending':
       case 'processing':
-        return 'bg-amber-50 text-amber-600 border-amber-100';
+        return 'bg-amber-950/40 text-amber-400 border-amber-800/60';
       case 'confirmed':
       case 'shipped':
-        return 'bg-sky-50 text-sky-600 border-sky-100';
+        return 'bg-sky-950/40 text-sky-400 border-sky-800/60';
       case 'failed':
       case 'cancelled':
       case 'returned':
-        return 'bg-red-50 text-red-600 border-red-100';
+        return 'bg-red-950/40 text-red-400 border-red-800/60';
       default:
-        return 'bg-navy-mid text-gray-400 border-navy-light';
+        return 'bg-navy-dark text-gray-400 border-navy-light';
     }
   };
 
@@ -120,7 +120,7 @@ const AdminOrders: React.FC = () => {
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-4 py-6">
-                      <div className="font-bold text-white text-[15px] font-playfair">#{order.orderNumber}</div>
+                      <div className="font-bold text-white text-[15px] font-playfair">#{order.orderNumber ? order.orderNumber.replace(/^KM-/, 'FH-') : ''}</div>
                       <div className="text-gray-400 text-[10px] mt-1 uppercase font-bold tracking-widest">{order.items.length} Product(s)</div>
                     </td>
                     <td className="px-4 py-6 text-gray-400 text-[12px] font-medium">
@@ -150,15 +150,15 @@ const AdminOrders: React.FC = () => {
                             value={order.orderStatus}
                             onChange={(e) => handleStatusChange(order._id, e.target.value)}
                             disabled={isUpdating}
-                            className={`w-full text-[10px] uppercase tracking-[0.2em] font-bold rounded-sm px-4 py-3 outline-none border transition-all cursor-pointer text-center appearance-none ${getStatusColor(order.orderStatus)}`}
+                            className={`w-full text-[10px] uppercase tracking-[0.2em] font-bold rounded-xl px-4 py-3 outline-none border transition-all cursor-pointer text-center appearance-none ${getStatusColor(order.orderStatus)}`}
                           >
-                            <option value="pending">PENDING</option>
-                            <option value="confirmed">CONFIRMED</option>
-                            <option value="processing">PROCESSING</option>
-                            <option value="shipped">SHIPPED</option>
-                            <option value="delivered">DELIVERED</option>
-                            <option value="cancelled">CANCELLED</option>
-                            <option value="returned">RETURNED</option>
+                            <option value="pending" className="bg-navy-mid text-amber-400 font-bold">PENDING</option>
+                            <option value="confirmed" className="bg-navy-mid text-sky-400 font-bold">CONFIRMED</option>
+                            <option value="processing" className="bg-navy-mid text-amber-400 font-bold">PROCESSING</option>
+                            <option value="shipped" className="bg-navy-mid text-sky-400 font-bold">SHIPPED</option>
+                            <option value="delivered" className="bg-navy-mid text-emerald-400 font-bold">DELIVERED</option>
+                            <option value="cancelled" className="bg-navy-mid text-red-400 font-bold">CANCELLED</option>
+                            <option value="returned" className="bg-navy-mid text-red-400 font-bold">RETURNED</option>
                           </select>
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"/></svg>

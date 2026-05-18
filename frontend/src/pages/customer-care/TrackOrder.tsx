@@ -41,7 +41,7 @@ const TrackOrder: React.FC = () => {
             required
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder="e.g. #FM-2098 or 0300 700 2061" 
+            placeholder="e.g. #FH-2098 or 0300 700 2061" 
             className="input-dark flex-grow py-3"
           />
           <button 
@@ -57,7 +57,7 @@ const TrackOrder: React.FC = () => {
       {hasTracked && (
         <div className="bg-navy-mid border border-navy-light p-8 animate-fadeIn">
           <h2 className="font-playfair text-2xl text-white mb-8 text-center pb-6 border-b border-navy-light">
-            Status for {identifier.startsWith('#') ? identifier : `#FM-${Math.floor(Math.random()*9000)+1000}`}
+            Status for {identifier.startsWith('#') ? identifier : `#FH-${Math.floor(Math.random()*9000)+1000}`}
           </h2>
           
           <div className="relative pl-6 lg:pl-10 space-y-12">

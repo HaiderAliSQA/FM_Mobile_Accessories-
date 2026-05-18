@@ -294,7 +294,7 @@ const Checkout: React.FC = () => {
                   <span className="text-xl">✅</span>
               </div>
               <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-relaxed">
-                Official FM Mobile Accessories Store • Secure Payment Gateway
+                Official FH Mobile Accessories Store • Secure Payment Gateway
               </p>
             </div>
           </div>

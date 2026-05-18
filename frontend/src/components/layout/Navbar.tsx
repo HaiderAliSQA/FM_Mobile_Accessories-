@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0">
             <span className="font-heading text-xl md:text-2xl font-extrabold tracking-tight">
-              <span className="text-electric">FM</span>
+              <span className="text-electric">FH</span>
               <span className="text-white ml-2 hidden sm:inline">Mobile Accessories</span>
               <span className="text-white ml-1 inline sm:hidden text-lg">Mobile</span>
             </span>

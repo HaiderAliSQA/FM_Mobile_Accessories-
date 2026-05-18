@@ -5,7 +5,7 @@ const ShippingPolicy: React.FC = () => {
     <div className="pt-24 pb-20 px-6 sm:px-6 lg:px-8 max-w-4xl mx-auto bg-fm-bg">
       <h1 className="font-playfair text-4xl text-white mb-4 text-center">Shipping Policy</h1>
       <p className="text-center font-dm text-white-2 mb-12">
-        To ensure a premium unboxing experience, all FM Mobile orders are quality checked and carefully packaged. 
+        To ensure a premium unboxing experience, all FH Mobile orders are quality checked and carefully packaged. 
       </p>
 
       <div className="bg-navy-mid border border-navy-light p-8 lg:p-10 space-y-10">
@@ -54,7 +54,7 @@ const ShippingPolicy: React.FC = () => {
             <h2 className="font-playfair text-2xl text-white">Areas Covered & Couriers</h2>
           </div>
           <p className="font-dm text-white-2 leading-relaxed ml-9">
-            FM Mobile dispatches solely via <strong>TCS Logistics</strong> to ensure a trusted priority handling process across major cities. We deliver to every city, town, and postal code accessible strictly by major courier networks within Pakistan.
+            FH Mobile dispatches solely via <strong>TCS Logistics</strong> to ensure a trusted priority handling process across major cities. We deliver to every city, town, and postal code accessible strictly by major courier networks within Pakistan.
           </p>
         </section>
 

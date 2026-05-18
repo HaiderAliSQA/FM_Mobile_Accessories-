@@ -66,14 +66,15 @@ const OrderConfirmation: React.FC = () => {
             Order <span className="text-electric">Confirmed</span>
           </h1>
           <p className="text-gray-500 text-[10px] font-extrabold uppercase tracking-[0.4em] mb-10 italic">
-            Thank you for choosing FM Mobile Accessories
+            Thank you for choosing FH Mobile Accessories
           </p>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-10 border-t border-white/5 font-heading">
             <div>
               <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Order ID</p>
-              <p className="text-white font-bold text-lg tracking-tighter">#{order.orderNumber}</p>
+              <p className="text-white font-bold text-lg tracking-tighter">#{order.orderNumber ? order.orderNumber.replace(/^KM-/, 'FH-') : ''}</p>
             </div>
+
             <div>
               <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Status</p>
               <p className="text-electric font-bold text-lg uppercase">Confirmed</p>

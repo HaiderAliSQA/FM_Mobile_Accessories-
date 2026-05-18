@@ -87,7 +87,7 @@ const ContactUs: React.FC = () => {
             <div className="bg-[#f8f5f0] border border-fm-gold/30 p-6 text-center">
               <span className="text-3xl mb-3 block">✓</span>
               <h4 className="font-playfair text-xl text-white mb-2">Message Sent</h4>
-              <p className="font-dm text-white-2 text-sm">Thank you for contacting FM Mobile Accessories. One of our representatives will respond to your inquiry shortly.</p>
+              <p className="font-dm text-white-2 text-sm">Thank you for contacting FH Mobile Accessories. One of our representatives will respond to your inquiry shortly.</p>
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="mt-6 text-electric text-xs font-dm tracking-widest uppercase hover:underline"

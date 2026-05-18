@@ -11,7 +11,7 @@ const ReturnsExchanges: React.FC = () => {
       <div className="bg-navy-mid border border-navy-light p-8 lg:p-10">
         <h2 className="font-playfair text-2xl text-white mb-6 pb-4 border-b border-navy-light">The 7-Day Guarantee</h2>
         <p className="font-dm text-white-2 leading-relaxed mb-6">
-          FM Mobile Accessories proudly offers a strict <strong>7-Day Return and Exchange Window</strong>. If the product quality or compatibility does not match your expectations upon delivery, you securely retain the right to query an exchange or return within exactly 7 days of the shipment delivery physical timestamp.
+          FH Mobile Accessories proudly offers a strict <strong>7-Day Return and Exchange Window</strong>. If the product quality or compatibility does not match your expectations upon delivery, you securely retain the right to query an exchange or return within exactly 7 days of the shipment delivery physical timestamp.
         </p>
 
         <h3 className="font-playfair text-xl text-white mb-4 mt-8">Required Conditions</h3>
@@ -22,7 +22,7 @@ const ReturnsExchanges: React.FC = () => {
           </li>
           <li className="flex items-start gap-3">
             <span className="text-electric mt-1">✓</span>
-            <span>The product must be securely repacked in the original FM Mobile premium branded packaging preserving all structural protection and printed labels.</span>
+            <span>The product must be securely repacked in the original FH Mobile premium branded packaging preserving all structural protection and printed labels.</span>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-electric mt-1">✓</span>
