@@ -163,20 +163,26 @@ const Cart: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
                   <span>Shipping TCS</span>
-                  <span className={delivery === 0 ? 'text-green-400' : 'text-white text-base'}>
+                  <span className={delivery === 0 ? 'text-green-400 font-bold' : 'text-white text-base'}>
                     {delivery === 0 ? 'FREE' : formatPKR(delivery)}
                   </span>
                 </div>
                 
-                {delivery > 0 && (
-                  <div className="bg-electric/5 border border-electric/10 rounded-2xl p-4 text-electric text-[10px] font-bold uppercase tracking-[0.2em] leading-relaxed">
-                    Add {formatPKR(5000 - subtotal)} more for <span className="underline">FREE TCS DELIVERY</span> across Pakistan.
-                  </div>
-                )}
+                <div className="pt-2">
+                  {items.reduce((sum, item) => sum + item.quantity, 0) === 1 ? (
+                    <div className="bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-2xl p-4 text-[10px] font-extrabold uppercase tracking-[0.15em] leading-relaxed text-center">
+                      ⚠️ B2B Alert: Add <span className="underline text-white font-black">1 more item</span> to unlock <span className="text-electric">FREE DELIVERY</span>!
+                    </div>
+                  ) : (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl p-4 text-[10px] font-extrabold uppercase tracking-[0.15em] leading-relaxed text-center">
+                      🎉 Wholesale Bonus: <span className="text-white font-black">FREE TCS DELIVERY</span> applied!
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-between items-center pt-6 border-t border-white/5">
-                <span className="font-heading text-white text-xl font-bold uppercase">Total</span>
+                <span className="font-heading text-white text-xl font-bold uppercase">Total Due</span>
                 <div className="text-right">
                   <span className="text-electric font-extrabold text-3xl block leading-none tracking-tight">{formatPKR(total)}</span>
                   <span className="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-bold block mt-2">GST Included</span>

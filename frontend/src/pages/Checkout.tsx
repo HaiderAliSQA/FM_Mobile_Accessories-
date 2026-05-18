@@ -1,35 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useCart } from '../hooks/useCart';
 import { usePlaceOrderMutation } from '../store/api/ordersApi';
+import { formatPrice } from '../utils/formatPrice';
 
 const pkPhoneRegex = /^03\d{9}$/;
 
 const checkoutSchema = z.object({
-  customerName: z.string().min(2, 'Name is required'),
-  customerEmail: z.string().email('Invalid email address'),
-  customerPhone: z.string().regex(pkPhoneRegex, 'Must be a valid 11-digit Pakistani mobile number starting with 03 (e.g., 03237893801)'),
-  shippingAddress: z.object({
-    street: z.string().min(5, 'Street address is required'),
-    city: z.string().min(2, 'City is required'),
-    state: z.string().min(2, 'State/Province is required'),
-    zipCode: z.string().optional(),
-    country: z.literal('Pakistan', {
-      errorMap: () => ({ message: 'Shipping is currently limited to Pakistan' }),
-    }),
-  }),
+  shopName: z.string().min(2, 'Shop Name is required (minimum 2 characters)'),
+  ownerName: z.string().min(2, 'Owner/Contact Name is required (minimum 2 characters)'),
+  phone: z.string().regex(pkPhoneRegex, 'Must be a valid 11-digit Pakistani mobile number starting with 03 (e.g., 03001234567)'),
+  city: z.string().min(2, 'City is required'),
+  paymentSchedule: z.enum(['weekly', 'monthly', 'immediate']),
+  note: z.string().optional(),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
-  const { items, subtotal, deliveryCharges, total } = useCart();
-
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'jazzcash' | 'easypaisa' | 'bank_transfer'>('cod');
+  const { items, subtotal, deliveryCharges, total, clearCart } = useCart();
   const [placeOrder, { isLoading, error }] = usePlaceOrderMutation();
 
   const {
@@ -39,9 +32,8 @@ const Checkout: React.FC = () => {
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      shippingAddress: {
-        country: 'Pakistan',
-      },
+      paymentSchedule: 'weekly',
+      note: '',
     },
   });
 
@@ -53,32 +45,29 @@ const Checkout: React.FC = () => {
 
   const onSubmit = async (data: CheckoutFormValues) => {
     try {
-      const orderData = {
-        customerName: data.customerName,
-        customerEmail: data.customerEmail,
-        customerPhone: data.customerPhone,
-        customerAddress: data.shippingAddress.street,
-        customerCity: data.shippingAddress.city,
-        customerPostalCode: data.shippingAddress.zipCode || '',
-        paymentMethod,
+      const orderPayload = {
+        shopName: data.shopName.trim(),
+        ownerName: data.ownerName.trim(),
+        phone: data.phone.trim(),
+        city: data.city.trim(),
+        paymentSchedule: data.paymentSchedule,
+        note: data.note?.trim() || '',
         items: items.map((item) => ({
           productId: item.productId,
           quantity: Number(item.quantity),
           color: item.color,
-          price: Number(item.price),
+          size: item.size,
         })),
-        total,
-        subtotal,
-        deliveryCharges,
       };
 
-      const result = await placeOrder(orderData).unwrap();
+      const result = await placeOrder(orderPayload).unwrap();
       
       if (result.success && result.data?.order) {
-        navigate(`/order-confirmation/${result.data.order.orderNumber}`);
+        clearCart(); // Clean cart state upon successful placement
+        navigate(`/order-confirmation/${result.data.order.orderId}`);
       }
     } catch (err: any) {
-      console.error('Failed to place order:', err);
+      console.error('Failed to place B2B wholesale order:', err);
     }
   };
 
@@ -89,212 +78,202 @@ const Checkout: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Progress Stepper */}
-        <div className="flex flex-col items-center mb-12 md:mb-20">
-          <h1 className="font-heading text-white text-3xl md:text-5xl font-extrabold uppercase tracking-tighter italic mb-6">Secure <span className="text-electric">Checkout</span></h1>
-          <div className="flex items-center gap-4 text-[10px] font-bold tracking-[0.3em] uppercase">
-            <span className="text-white">Shipping</span>
-            <div className="w-8 h-0.5 bg-electric"></div>
-            <span className="text-gray-600">Confirmation</span>
-          </div>
+        <div className="flex flex-col items-center mb-12 md:mb-16">
+          <h1 className="font-heading text-white text-3xl md:text-5xl font-extrabold uppercase tracking-tighter italic mb-4">
+            Wholesale <span className="text-electric">Checkout</span>
+          </h1>
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.25em] text-center max-w-md">
+            Guest Checkout • No password required
+          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-10 items-start">
           
-          {/* Left Panel: Form */}
+          {/* Left Panel: B2B Checkout Form */}
           <div className="w-full lg:w-[60%] space-y-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
               
-              {/* Information Section */}
-              <div className="bg-navy-mid border border-white/5 rounded-[2.5rem] p-8 md:p-12 space-y-10">
+              {/* Section 1: Shop & Contact Info */}
+              <div className="bg-navy-mid border border-white/5 rounded-[2.5rem] p-8 md:p-12 space-y-8">
                 <div className="flex items-center gap-5">
                   <span className="w-10 h-10 rounded-xl bg-electric/10 text-electric flex items-center justify-center font-heading text-lg font-extrabold border border-electric/20 shadow-glow-blue/10">1</span>
-                  <h2 className="text-xl font-heading font-extrabold text-white uppercase tracking-tight">Contact Information</h2>
+                  <h2 className="text-lg font-heading font-extrabold text-white uppercase tracking-tight">Shop & Contact Details</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Shop Name */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Shop Name</label>
                     <input
-                      {...register('customerEmail')}
-                      placeholder="e.g. user@gmail.com"
+                      {...register('shopName')}
+                      placeholder="e.g. Al-Rehman Mobile Store"
                       className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
                     />
-                    {errors.customerEmail && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.customerEmail.message}</p>}
+                    {errors.shopName && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.shopName.message}</p>}
                   </div>
+
+                  {/* Owner Name */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Mobile Number (Pakistan)</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Owner / Contact Name</label>
                     <input
-                      {...register('customerPhone')}
-                      placeholder="e.g. 03237893801"
+                      {...register('ownerName')}
+                      placeholder="e.g. Hafiz Huraira"
                       className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
                     />
-                    {errors.customerPhone && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.customerPhone.message}</p>}
+                    {errors.ownerName && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.ownerName.message}</p>}
+                  </div>
+
+                  {/* Mobile Number */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Mobile Number (Pakistani)</label>
+                    <input
+                      {...register('phone')}
+                      placeholder="e.g. 03001234567"
+                      className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
+                    />
+                    {errors.phone && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.phone.message}</p>}
+                  </div>
+
+                  {/* City */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">City / Region</label>
+                    <input
+                      {...register('city')}
+                      placeholder="e.g. Multan"
+                      className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
+                    />
+                    {errors.city && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.city.message}</p>}
                   </div>
                 </div>
               </div>
 
-              {/* Shipping Section */}
-              <div className="bg-navy-mid border border-white/5 rounded-[2.5rem] p-8 md:p-12 space-y-10">
+              {/* Section 2: Ledger Payment Schedule & Notes */}
+              <div className="bg-navy-mid border border-white/5 rounded-[2.5rem] p-8 md:p-12 space-y-8">
                 <div className="flex items-center gap-5">
                   <span className="w-10 h-10 rounded-xl bg-electric/10 text-electric flex items-center justify-center font-heading text-lg font-extrabold border border-electric/20 shadow-glow-blue/10">2</span>
-                  <h2 className="text-xl font-heading font-extrabold text-white uppercase tracking-tight">Shipping Location</h2>
+                  <h2 className="text-lg font-heading font-extrabold text-white uppercase tracking-tight">Ledger / بہی کھاتہ Schedule</h2>
                 </div>
                 
-                <div className="space-y-8">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Full Name</label>
-                    <input
-                      {...register('customerName')}
-                      placeholder="Receiver's name"
-                      className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
-                    />
-                    {errors.customerName && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.customerName.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Complete Address</label>
-                    <input
-                      {...register('shippingAddress.street')}
-                      placeholder="House, Street, Area info"
-                      className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
-                    />
-                    {errors.shippingAddress?.street && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.shippingAddress.street.message}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">City</label>
-                      <input
-                        {...register('shippingAddress.city')}
-                        placeholder="e.g. Karachi"
-                        className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
-                      />
-                      {errors.shippingAddress?.city && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.shippingAddress.city.message}</p>}
+                <div className="space-y-6">
+                  {/* Payment Schedule Selector */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Payment Schedule</label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { id: 'weekly', title: 'Weekly', desc: 'Pay every week' },
+                        { id: 'monthly', title: 'Monthly', desc: 'Pay every month' },
+                        { id: 'immediate', title: 'COD', desc: 'Pay on delivery' }
+                      ].map((item) => (
+                        <label 
+                          key={item.id}
+                          className="relative flex flex-col p-4 rounded-2xl border transition-all cursor-pointer border-white/5 bg-navy-dark hover:border-white/20 has-[:checked]:border-electric has-[:checked]:bg-electric/5"
+                        >
+                          <input 
+                            type="radio" 
+                            value={item.id}
+                            {...register('paymentSchedule')}
+                            className="absolute top-4 right-4 accent-electric"
+                          />
+                          <span className="text-xs font-bold text-white uppercase tracking-wider block mb-1">{item.title}</span>
+                          <span className="text-[9px] text-gray-600 font-medium uppercase">{item.desc}</span>
+                        </label>
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Province/State</label>
-                      <input
-                        {...register('shippingAddress.state')}
-                        placeholder="Province"
-                        className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700"
-                      />
-                      {errors.shippingAddress?.state && <p className="text-red-400 text-[10px] mt-1 font-bold uppercase tracking-wider">{errors.shippingAddress.state.message}</p>}
-                    </div>
+                  </div>
+
+                  {/* Special Instructions */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Special Instructions / Order Notes (Optional)</label>
+                    <textarea
+                      {...register('note')}
+                      rows={3}
+                      placeholder="e.g. Please pack safely, or request specific colors/items..."
+                      className="w-full bg-navy-dark border border-white/5 px-6 py-4 rounded-2xl text-white font-body text-sm focus:outline-none focus:border-electric transition-all placeholder:text-gray-700 resize-none"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Payment Section */}
-              <div className="bg-navy-mid border border-white/5 rounded-[2.5rem] p-8 md:p-12 space-y-10">
-                <div className="flex items-center gap-5">
-                  <span className="w-10 h-10 rounded-xl bg-electric/10 text-electric flex items-center justify-center font-heading text-lg font-extrabold border border-electric/20 shadow-glow-blue/10">3</span>
-                  <h2 className="text-xl font-heading font-extrabold text-white uppercase tracking-tight">Payment Method</h2>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { id: 'cod', label: 'Cash on Delivery', desc: 'Secure doorstep payment' },
-                    { id: 'jazzcash', label: 'JazzCash', desc: 'Instant mobile wallet' },
-                    { id: 'easypaisa', label: 'Easypaisa', desc: 'Instant authorization' },
-                    { id: 'bank_transfer', label: 'Bank Transfer', desc: 'Manual deposit details' }
-                  ].map((method) => (
-                    <label 
-                      key={method.id}
-                      className={`relative flex flex-col p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                        paymentMethod === method.id ? 'border-electric bg-electric/5 shadow-glow-blue/10' : 'border-white/5 bg-navy-dark hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`text-[11px] font-extrabold uppercase tracking-[0.2em] transition-colors ${paymentMethod === method.id ? 'text-white' : 'text-gray-500'}`}>{method.label}</span>
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === method.id ? 'border-electric bg-electric' : 'border-white/10 bg-transparent'}`}>
-                          {paymentMethod === method.id && <div className="w-2.5 h-2.5 bg-navy-mid rounded-full" />}
-                        </div>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          className="hidden"
-                          checked={paymentMethod === method.id} 
-                          onChange={() => setPaymentMethod(method.id as any)}
-                        />
-                      </div>
-                      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{method.desc}</p>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
+              {/* Error Summary Banner */}
               {error && (
                 <div className="p-6 bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-widest rounded-2xl border border-red-500/20 flex items-center gap-4">
-                  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span>{(error as any)?.data?.message || 'Transaction failed. Please verify your details.'}</span>
+                  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{(error as any)?.data?.message || 'Failed to place B2B wholesale order. Please verify details.'}</span>
                 </div>
               )}
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-electric text-white py-6 rounded-[2rem] text-sm font-extrabold uppercase tracking-[0.4em] transition-all hover:shadow-glow-blue active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-4 animate-pulse-glow"
+                className="w-full bg-electric text-white py-6 rounded-[2rem] text-sm font-extrabold uppercase tracking-[0.35em] transition-all hover:shadow-glow-blue active:scale-[0.99] disabled:opacity-50 flex justify-center items-center gap-4 animate-pulse-glow"
               >
                 {isLoading ? (
                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                 ) : (
-                  <>Complete Purchase • PKR {total.toLocaleString()}</>
+                  <>Submit Order • {formatPrice(total)}</>
                 )}
               </button>
             </form>
           </div>
 
           {/* Right Panel: Order Summary */}
-          <div className="w-full lg:w-[40%] bg-navy-mid/50 backdrop-blur-md p-10 rounded-[3rem] border border-white/5 space-y-12 animate-fade-in-right sticky top-32">
-            <h2 className="font-heading text-xl font-extrabold text-white uppercase tracking-tight italic border-b border-white/5 pb-6">Your Order</h2>
+          <div className="w-full lg:w-[40%] bg-navy-mid/50 backdrop-blur-md p-10 rounded-[3rem] border border-white/5 space-y-8 sticky top-32">
+            <h2 className="font-heading text-lg font-extrabold text-white uppercase tracking-tight italic border-b border-white/5 pb-4">
+              Order Items
+            </h2>
             
-            <div className="space-y-8 max-h-[500px] overflow-y-auto pr-4 no-scrollbar">
-              {items.map((item: any) => (
-                <div key={`${item.productId}-${item.color || 'nocolor'}`} className="flex gap-6 group">
+            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+              {items.map((item) => (
+                <div key={`${item.productId}-${item.color || 'nocolor'}-${item.size || 'nosize'}`} className="flex gap-4 group">
                   <div className="relative shrink-0">
-                    <div className="w-16 h-16 bg-navy-dark rounded-xl border border-white/5 p-2 flex items-center justify-center group-hover:border-electric/40 transition-colors">
+                    <div className="w-14 h-14 bg-navy-dark rounded-xl border border-white/5 p-1.5 flex items-center justify-center group-hover:border-electric/40 transition-colors">
                        <img src={item.image} alt={item.name} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" />
                     </div>
-                    <span className="absolute -top-1 -right-1 bg-electric text-white font-heading text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-navy-mid">
+                    <span className="absolute -top-1 -right-1 bg-electric text-white font-heading text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border-2 border-navy-mid">
                       {item.quantity}
                     </span>
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <h3 className="text-xs text-white font-bold uppercase tracking-wide leading-tight group-hover:text-electric transition-colors">{item.name}</h3>
-                    {item.color && <p className="text-[9px] font-extrabold text-gray-600 uppercase tracking-[0.2em]">{item.color}</p>}
-                    <p className="text-sm font-extrabold text-electric mt-2">PKR {(item.price * item.quantity).toLocaleString()}</p>
+                  <div className="flex-1 space-y-0.5">
+                    <h3 className="text-[11px] text-white font-bold uppercase tracking-wide leading-tight group-hover:text-electric transition-colors">{item.name}</h3>
+                    {item.color && <p className="text-[8px] font-extrabold text-gray-500 uppercase tracking-widest">{item.color}</p>}
+                    <p className="text-xs font-bold text-electric mt-1">{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-4 pt-10 border-t border-white/5">
-              <div className="flex justify-between items-center text-[11px] font-extrabold text-gray-500 tracking-[0.3em] uppercase">
-                <span>Value</span>
-                <span className="text-white text-base">PKR {subtotal.toLocaleString()}</span>
+            <div className="space-y-3 pt-6 border-t border-white/5">
+              <div className="flex justify-between items-center text-[10px] font-bold text-gray-500 tracking-wider uppercase">
+                <span>Cart Subtotal</span>
+                <span className="text-white text-xs font-bold">{formatPrice(subtotal)}</span>
               </div>
-              <div className="flex justify-between items-center text-[11px] font-extrabold text-gray-500 tracking-[0.3em] uppercase">
-                <span>Shipping TCS</span>
-                <span className="text-white text-base">
-                  {deliveryCharges === 0 ? 'FREE' : `PKR ${deliveryCharges.toLocaleString()}`}
+              <div className="flex justify-between items-center text-[10px] font-bold text-gray-500 tracking-wider uppercase">
+                <span>Shipping Fee</span>
+                <span className={deliveryCharges === 0 ? "text-emerald-400 text-xs font-extrabold uppercase" : "text-white text-xs font-bold"}>
+                  {deliveryCharges === 0 ? 'FREE' : formatPrice(deliveryCharges)}
                 </span>
               </div>
               
-              <div className="pt-8 flex justify-between items-end border-t border-white/5">
-                <span className="font-heading text-white text-lg font-extrabold uppercase italic tracking-tighter">Total Due</span>
+              <div className="pt-6 flex justify-between items-end border-t border-white/5">
+                <span className="font-heading text-white text-base font-extrabold uppercase italic tracking-tighter">Estimated Total</span>
                 <div className="text-right">
-                    <span className="text-white font-extrabold text-4xl block leading-none tracking-tighter italic">PKR {total.toLocaleString()}</span>
-                    <span className="text-gray-700 text-[9px] font-extrabold uppercase tracking-[0.3em] block mt-3 italic text-right">Tax Included</span>
+                    <span className="text-electric font-extrabold text-3xl block leading-none tracking-tighter italic">{formatPrice(total)}</span>
+                    <span className="text-gray-700 text-[9px] font-extrabold uppercase tracking-[0.2em] block mt-2 text-right">No Hidden Costs</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-8 bg-navy-dark rounded-3xl border border-white/5 flex flex-col items-center gap-4 text-center">
-              <div className="flex gap-4">
-                  <span className="text-xl">🛡️</span>
-                  <span className="text-xl">🚚</span>
-                  <span className="text-xl">✅</span>
+            <div className="p-6 bg-navy-dark rounded-2xl border border-white/5 flex flex-col items-center gap-3 text-center">
+              <div className="flex gap-3 text-lg">
+                  <span>🛡️</span>
+                  <span>🚚</span>
+                  <span>🤝</span>
               </div>
-              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-relaxed">
-                Official FH Mobile Accessories Store • Secure Payment Gateway
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-relaxed">
+                FH Wholesale Network Pakistan • Delivery via TCS Courier Service
               </p>
             </div>
           </div>

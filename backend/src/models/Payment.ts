@@ -1,50 +1,75 @@
 // backend/src/models/Payment.ts
 import mongoose, { Document, Schema, Model } from 'mongoose';
 
-export type PaymentRecordStatus = 'pending' | 'success' | 'failed';
+export type PaymentMethod = 'cash' | 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cheque';
 
 export interface IPayment extends Document {
   _id: mongoose.Types.ObjectId;
-  orderId: mongoose.Types.ObjectId;
-  method: string;
+  order: mongoose.Types.ObjectId;
+  shopName: string;
+  phone: string;
   amount: number;
-  transactionId: string;
-  status: PaymentRecordStatus;
-  gatewayResponse: Record<string, unknown>;
+  method: PaymentMethod;
+  transactionId?: string;
+  paymentDate: Date;
+  installmentNote?: string;
+  orderTotalAtTime: number;
+  paidBeforeThis: number;
+  dueAfterThis: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const paymentSchema = new Schema<IPayment>(
   {
-    orderId: {
+    order: {
       type: Schema.Types.ObjectId,
       ref: 'Order',
-      required: [true, 'Order ID is required'],
+      required: [true, 'Order reference is required'],
     },
-    method: {
+    shopName: {
       type: String,
-      required: [true, 'Payment method is required'],
+      required: true,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: true,
       trim: true,
     },
     amount: {
       type: Number,
-      required: [true, 'Payment amount is required'],
-      min: [0, 'Amount cannot be negative'],
+      required: [true, 'Amount is required'],
+      min: [1, 'Amount must be greater than 0'],
+    },
+    method: {
+      type: String,
+      enum: ['cash', 'jazzcash', 'easypaisa', 'bank_transfer', 'cheque'],
+      required: true,
     },
     transactionId: {
       type: String,
-      required: [true, 'Transaction ID is required'],
       trim: true,
     },
-    status: {
-      type: String,
-      enum: ['pending', 'success', 'failed'],
-      default: 'pending',
+    paymentDate: {
+      type: Date,
+      default: Date.now,
     },
-    gatewayResponse: {
-      type: Schema.Types.Mixed,
-      default: {},
+    installmentNote: {
+      type: String,
+      trim: true,
+    },
+    orderTotalAtTime: {
+      type: Number,
+      required: true,
+    },
+    paidBeforeThis: {
+      type: Number,
+      required: true,
+    },
+    dueAfterThis: {
+      type: Number,
+      required: true,
     },
   },
   {
@@ -52,12 +77,10 @@ const paymentSchema = new Schema<IPayment>(
   }
 );
 
-paymentSchema.index({ orderId: 1 });
-paymentSchema.index({ transactionId: 1 });
+paymentSchema.index({ order: 1 });
+paymentSchema.index({ phone: 1 });
+paymentSchema.index({ paymentDate: -1 });
 
-const Payment: Model<IPayment> = mongoose.model<IPayment>(
-  'Payment',
-  paymentSchema
-);
+const Payment: Model<IPayment> = mongoose.model<IPayment>('Payment', paymentSchema);
 
 export default Payment;

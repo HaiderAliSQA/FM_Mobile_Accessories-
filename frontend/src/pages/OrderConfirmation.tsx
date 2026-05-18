@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useCart } from '../hooks/useCart';
 import { useGetOrderByNumberQuery } from '../store/api/ordersApi';
+import { formatPrice } from '../utils/formatPrice';
 
 const OrderConfirmation: React.FC = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
-  const { clearCart } = useCart();
 
   const { data: result, isLoading, isError } = useGetOrderByNumberQuery(orderNumber || '', {
     skip: !orderNumber,
@@ -13,10 +12,6 @@ const OrderConfirmation: React.FC = () => {
   });
 
   const order = result?.data;
-
-  useEffect(() => {
-    clearCart();
-  }, [clearCart]);
 
   if (isLoading) {
     return (
@@ -63,29 +58,29 @@ const OrderConfirmation: React.FC = () => {
           </div>
           
           <h1 className="font-heading text-white text-4xl md:text-6xl font-extrabold uppercase tracking-tighter italic mb-4">
-            Order <span className="text-electric">Confirmed</span>
+            Order <span className="text-electric">Placed</span>
           </h1>
           <p className="text-gray-500 text-[10px] font-extrabold uppercase tracking-[0.4em] mb-10 italic">
-            Thank you for choosing FH Mobile Accessories
+            Thank you for choosing FH Mobile Accessories Wholesale
           </p>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-10 border-t border-white/5 font-heading">
             <div>
               <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Order ID</p>
-              <p className="text-white font-bold text-lg tracking-tighter">#{order.orderNumber ? order.orderNumber.replace(/^KM-/, 'FH-') : ''}</p>
+              <p className="text-white font-bold text-lg tracking-tighter">#{order.orderId}</p>
             </div>
 
             <div>
-              <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Status</p>
-              <p className="text-electric font-bold text-lg uppercase">Confirmed</p>
+              <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Schedule</p>
+              <p className="text-electric font-bold text-lg uppercase">{order.paymentSchedule}</p>
             </div>
             <div>
-              <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Expected By</p>
+              <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Expected Delivery</p>
               <p className="text-white font-bold text-lg">{deliveryDate.toLocaleDateString('en-PK', { day: 'numeric', month: 'short' })}</p>
             </div>
             <div>
-              <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">Method</p>
-              <p className="text-white font-bold text-lg uppercase">{order.paymentMethod}</p>
+              <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mb-2">City</p>
+              <p className="text-white font-bold text-lg uppercase">{order.city}</p>
             </div>
           </div>
         </div>
@@ -98,24 +93,24 @@ const OrderConfirmation: React.FC = () => {
               {order.items.map((item: any, idx: number) => (
                 <div key={idx} className="flex gap-6 items-center">
                   <div className="w-16 h-16 bg-navy-dark rounded-xl border border-white/5 p-2 shrink-0">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                    <img src={item.image || (item.productId?.images?.[0])} alt={item.name} className="w-full h-full object-contain" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-bold text-white uppercase truncate">{item.name}</h4>
                     <p className="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mt-1">QTY: {item.quantity}</p>
                   </div>
-                  <p className="text-sm font-extrabold text-white">PKR {(item.price * item.quantity).toLocaleString()}</p>
+                  <p className="text-sm font-extrabold text-white">{formatPrice(item.price * item.quantity)}</p>
                 </div>
               ))}
             </div>
             <div className="pt-8 border-t border-white/5 space-y-3">
               <div className="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest">
                 <span>Shipping Fee</span>
-                <span className="text-white">{order.deliveryCharges === 0 ? 'FREE' : `PKR ${order.deliveryCharges}`}</span>
+                <span className="text-white">{order.deliveryFee === 0 ? 'FREE' : formatPrice(order.deliveryFee)}</span>
               </div>
               <div className="flex justify-between text-xl font-extrabold text-white uppercase italic tracking-tighter mt-4">
                 <span>Total Amount</span>
-                <span className="text-electric">PKR {order.totalAmount?.toLocaleString()}</span>
+                <span className="text-electric">{formatPrice(order.totalAmount)}</span>
               </div>
             </div>
           </div>
@@ -128,16 +123,16 @@ const OrderConfirmation: React.FC = () => {
                  <h3 className="font-heading text-lg font-extrabold text-white uppercase italic">Shipping Via TCS</h3>
               </div>
               <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest leading-relaxed">
-                Your order will be dispatched within 24 hours. A tracking number will be sent to your mobile number via SMS/WhatsApp.
+                Your order is processed. We will dispatch B2B packages within 24 hours. TCS tracking number will be SMSed to your registered number: <strong>{order.phone}</strong>.
               </p>
             </div>
 
             <div className="bg-electric rounded-[3rem] p-10 text-center space-y-6 shadow-glow-blue animate-pulse-glow">
-              <h3 className="font-heading text-xl font-extrabold text-white uppercase italic">Need Assistance?</h3>
-              <p className="text-[10px] text-white/70 font-extrabold uppercase tracking-[0.2em]">Contact our Concierge</p>
+              <h3 className="font-heading text-xl font-extrabold text-white uppercase italic">B2B Support</h3>
+              <p className="text-[10px] text-white/70 font-extrabold uppercase tracking-[0.2em]">Contact Hafiz Huraira</p>
               <div className="flex flex-col gap-3 font-heading">
-                <a href="https://wa.me/923017967300" className="bg-navy-mid text-black py-4 rounded-2xl font-extrabold uppercase tracking-widest text-xs hover:bg-gray-100 transition-all">WhatsApp Us</a>
-                <Link to="/" className="text-white text-[10px] font-extrabold uppercase tracking-[0.3em] py-2">Continue Shopping</Link>
+                <a href="https://wa.me/923007002061" className="bg-navy-mid text-white py-4 rounded-2xl font-extrabold uppercase tracking-widest text-xs hover:bg-gray-100/10 transition-all">WhatsApp Us</a>
+                <Link to="/" className="text-white text-[10px] font-extrabold uppercase tracking-[0.3em] py-2">Return to Home</Link>
               </div>
             </div>
           </div>

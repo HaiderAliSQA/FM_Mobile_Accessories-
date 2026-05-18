@@ -10,7 +10,7 @@ const AdminLayout: React.FC = () => {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const [logoutApi] = useLogoutMutation();
-  
+
   // Initialize from localStorage to persist across reloads
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('adminSidebarOpen');
@@ -39,20 +39,17 @@ const AdminLayout: React.FC = () => {
   const navLinks = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { label: 'Products', path: '/admin/products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-    { label: 'Orders', path: '/admin/orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
+    { label: 'Orders', path: '/admin/wholesale-orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
   ];
 
   const wholesaleLinks = [
-    { label: 'Wholesale Orders', path: '/admin/wholesale-orders', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
-    { label: 'Shop Keepers', path: '/admin/shopkeepers', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-    { label: 'Payments', path: '/admin/wholesale-payments', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
-    { label: 'Back to Store', path: '/', icon: 'M10 19l-7-7m0 0l7-7m-7 7h18' },
+    { label: 'Ledger Payments', path: '/admin/wholesale-payments', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
   ];
 
 
   return (
     <div className="h-screen bg-navy-dark font-body text-white flex overflow-hidden">
-      
+
       {/* Mobile Backdrop Overlay */}
       {isSidebarOpen && (
         <div
@@ -63,9 +60,8 @@ const AdminLayout: React.FC = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-navy-mid border-r border-navy-light z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 w-64 bg-navy-mid border-r border-navy-light z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         {/* Brand */}
         <div className="h-20 flex items-center justify-between border-b border-navy-light px-6 shrink-0 bg-navy-mid">
@@ -77,9 +73,9 @@ const AdminLayout: React.FC = () => {
               Management
             </span>
           </Link>
-          
+
           {/* Internal sidebar close for mobile */}
-          <button 
+          <button
             onClick={() => setIsSidebarOpen(false)}
             className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
           >
@@ -98,11 +94,10 @@ const AdminLayout: React.FC = () => {
               <Link
                 key={link.label}
                 to={link.path}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group ${
-                  isActive
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group ${isActive
                     ? 'bg-electric/20 text-blue-glow border border-electric/30 shadow-glow-blue'
                     : 'text-gray-400 hover:bg-navy-light hover:text-white'
-                }`}
+                  }`}
               >
                 <svg className={`w-5 h-5 ${isActive ? 'text-blue-glow' : 'text-gray-400 group-hover:text-blue-glow'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive ? 2 : 1.5} d={link.icon} />
@@ -114,7 +109,7 @@ const AdminLayout: React.FC = () => {
 
           {/* Wholesale Section */}
           <div className="pt-4 pb-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-600 px-4 mb-2">Wholesale / B2B</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 px-4 mb-2">Wholesale / B2B</p>
           </div>
           {wholesaleLinks.filter(l => l.path !== '/').map((link) => {
             const isActive = location.pathname.startsWith(link.path);
@@ -122,11 +117,10 @@ const AdminLayout: React.FC = () => {
               <Link
                 key={link.label}
                 to={link.path}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group ${
-                  isActive
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group ${isActive
                     ? 'bg-electric/20 text-blue-glow border border-electric/30 shadow-glow-blue'
                     : 'text-gray-400 hover:bg-navy-light hover:text-white'
-                }`}
+                  }`}
               >
                 <svg className={`w-5 h-5 ${isActive ? 'text-blue-glow' : 'text-gray-400 group-hover:text-blue-glow'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive ? 2 : 1.5} d={link.icon} />
@@ -163,10 +157,9 @@ const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div 
-        className={`flex-1 flex flex-col min-w-0 bg-navy-dark transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'lg:ml-64' : 'ml-0'
-        }`}
+      <div
+        className={`flex-1 flex flex-col min-w-0 bg-navy-dark transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'
+          }`}
       >
         {/* Universal Sticky Header */}
         <header className="h-20 bg-navy-mid border-b border-navy-light flex items-center px-6 shrink-0 justify-between sticky top-0 z-30 shadow-md">

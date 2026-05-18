@@ -154,9 +154,9 @@ const AdminDashboard: React.FC = () => {
               <button onClick={() => navigate('/admin/wholesale-orders?paymentStatus=unpaid')} className="text-[10px] text-electric hover:underline mt-1">View →</button>
             </div>
             <div className="bg-navy-mid border border-navy-light border-l-4 border-l-navy-light p-5 rounded-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Shop Keepers</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">B2B Customers</p>
               <h3 className="text-2xl font-bold font-heading text-white">{ws.activeShopKeepers}</h3>
-              <button onClick={() => navigate('/admin/shopkeepers')} className="text-[10px] text-electric hover:underline mt-1">Manage →</button>
+              <button onClick={() => navigate('/admin/wholesale-orders')} className="text-[10px] text-electric hover:underline mt-1">View Orders →</button>
             </div>
           </div>
 
@@ -178,10 +178,11 @@ const AdminDashboard: React.FC = () => {
                   <tbody className="divide-y divide-navy-light">
                     {ws.overdueOrders.map((o) => {
                       const sk = typeof o.shopKeeper === 'object' ? o.shopKeeper : null;
+                      const shopName = o.shopName || sk?.shopName || '—';
                       const daysOverdue = o.expectedPaymentDate ? Math.floor((Date.now() - new Date(o.expectedPaymentDate).getTime()) / 86400000) : 0;
                       return (
                         <tr key={o._id} className="hover:bg-navy-light/20">
-                          <td className="px-4 py-2.5 text-white font-bold">{sk?.shopName || '—'}</td>
+                          <td className="px-4 py-2.5 text-white font-bold">{shopName}</td>
                           <td className="px-4 py-2.5 text-red-400 font-bold">{formatPrice(o.totalDue)}</td>
                           <td className="px-4 py-2.5 text-gray-400">
                             {o.expectedPaymentDate ? new Date(o.expectedPaymentDate).toLocaleDateString('en-PK') : '—'}

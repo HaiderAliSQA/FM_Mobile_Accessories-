@@ -26,7 +26,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose }) => 
   const [transactionId, setTransactionId] = useState('');
   const [installmentNote, setInstallmentNote] = useState('');
 
-  const shopKeeper = order.shopKeeper;
+  const shopName = order.shopName || (typeof order.shopKeeper === 'object' ? order.shopKeeper?.shopName : '');
   const remaining = order.totalDue;
   const amountNum = Number(amount);
   const amountError = amountNum > 0 && amountNum > remaining
@@ -40,7 +40,6 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose }) => 
     try {
       await recordPayment({
         orderId: order._id,
-        shopKeeperId: typeof shopKeeper === 'string' ? shopKeeper : shopKeeper._id,
         amount: amountNum,
         method,
         transactionId: transactionId.trim() || undefined,
@@ -68,7 +67,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose }) => 
           <div>
             <h2 className="font-heading text-white text-xl font-bold">Record Payment</h2>
             <p className="text-gray-400 text-[11px] uppercase tracking-widest mt-0.5">
-              {order.orderId} — {typeof shopKeeper === 'object' ? shopKeeper.shopName : ''}
+              {order.orderId} — {shopName}
             </p>
           </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-navy-light">

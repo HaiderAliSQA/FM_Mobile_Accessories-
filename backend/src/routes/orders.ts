@@ -1,69 +1,60 @@
 // backend/src/routes/orders.ts
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import Order from '../models/Order';
 import Product from '../models/Product';
-import authMiddleware from '../middleware/authMiddleware';
-import generateOrderNumber from '../utils/generateOrderNumber';
+import calculateDeliveryFee from '../utils/calculateDeliveryFee';
+import generateOrderId from '../utils/generateOrderId';
 import { sendOrderEmail, generateOrderPDF } from '../utils/sendOrderEmail';
 
 const router = Router();
 
-const DELIVERY_CHARGE = 300;
-const FREE_DELIVERY_THRESHOLD = 5000;
-
-// POST /api/orders - PUBLIC — place a new order
+// POST /api/orders - PUBLIC — place a new wholesale guest order
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const {
-      customerName,
-      customerPhone,
-      customerEmail,
-      customerAddress,
-      customerCity,
-      customerPostalCode,
+      shopName,
+      ownerName,
+      phone,
+      city,
       items,
-      paymentMethod,
-      transactionId,
-      notes,
+      paymentSchedule,
+      note,
     } = req.body as {
-      customerName: string;
-      customerPhone: string;
-      customerEmail?: string;
-      customerAddress: string;
-      customerCity: string;
-      customerPostalCode?: string;
+      shopName: string;
+      ownerName: string;
+      phone: string;
+      city: string;
       items: Array<{
         productId: string;
-        size: number;
-        color: string;
+        size?: number;
+        color?: string;
         quantity: number;
       }>;
-      paymentMethod: string;
-      transactionId?: string;
-      notes?: string;
+      paymentSchedule?: 'weekly' | 'monthly' | 'immediate';
+      note?: string;
     };
 
-    // Validate required fields
-    if (!customerName || !customerName.trim()) {
-      res.status(400).json({ success: false, message: 'Customer name is required' });
+    // Validate required B2B guest fields
+    if (!shopName || !shopName.trim()) {
+      res.status(400).json({ success: false, message: 'Shop Name is required' });
       return;
     }
 
-    if (!customerPhone || !/^03[0-9]{9}$/.test(customerPhone)) {
+    if (!ownerName || !ownerName.trim()) {
+      res.status(400).json({ success: false, message: 'Owner/Contact Name is required' });
+      return;
+    }
+
+    if (!phone || !/^03[0-9]{9}$/.test(phone)) {
       res.status(400).json({
         success: false,
-        message: 'Phone number must be in Pakistani format (03XXXXXXXXX)',
+        message: 'Phone number must be a valid Pakistani number (03XXXXXXXXX)',
       });
       return;
     }
 
-    if (!customerAddress || !customerAddress.trim()) {
-      res.status(400).json({ success: false, message: 'Customer address is required' });
-      return;
-    }
-
-    if (!customerCity || !customerCity.trim()) {
-      res.status(400).json({ success: false, message: 'Customer city is required' });
+    if (!city || !city.trim()) {
+      res.status(400).json({ success: false, message: 'City is required' });
       return;
     }
 
@@ -72,13 +63,6 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const validPaymentMethods = ['jazzcash', 'easypaisa', 'bank_transfer', 'cod'];
-    if (!paymentMethod || !validPaymentMethods.includes(paymentMethod)) {
-      res.status(400).json({ success: false, message: 'Invalid payment method' });
-      return;
-    }
-
-    // Validate and price each item from DB — never trust client prices
     const resolvedItems: Array<{
       productId: import('mongoose').Types.ObjectId;
       name: string;
@@ -87,6 +71,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       color?: string;
       quantity: number;
       image: string;
+      subtotal: number;
     }> = [];
 
     for (const item of items) {
@@ -103,7 +88,6 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
-      // Use lean() to bypass getter transformations — ensures raw stock value from DB
       const product = await Product.findById(item.productId).lean();
 
       if (!product) {
@@ -122,26 +106,6 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
-      if (product.sizes && product.sizes.length > 0 && item.size) {
-        const sizeEntry = product.sizes.find((s) => s.size === item.size);
-
-        if (!sizeEntry) {
-          res.status(400).json({
-            success: false,
-            message: `Size ${item.size} is not available for "${product.name}"`,
-          });
-          return;
-        }
-
-        if (sizeEntry.isBlocked) {
-          res.status(400).json({
-            success: false,
-            message: `Size ${item.size} is currently unavailable for "${product.name}"`,
-          });
-          return;
-        }
-      }
-
       if (item.quantity > product.stock) {
         const truncatedName = product.name.length > 40 ? product.name.substring(0, 37) + '...' : product.name;
         res.status(400).json({
@@ -151,190 +115,107 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
+      const itemPrice = Number(product.price) || 0;
       resolvedItems.push({
         productId: product._id,
         name: product.name,
-        price: Number(product.price), // FORCE Number
+        price: itemPrice,
         size: item.size ? Number(item.size) : undefined,
         color: item.color ? String(item.color) : undefined,
-        quantity: Number(item.quantity), // FORCE Number
+        quantity: Number(item.quantity),
         image: product.images?.[0] || '',
+        subtotal: itemPrice * Number(item.quantity),
       });
     }
 
-    // Calculate totals from DB prices — parse everything explicitly
-    const subtotal = resolvedItems.reduce((sum, item) => {
-      const price = Number(item.price) || 0;
-      const quantity = Number(item.quantity) || 0;
-      return sum + (price * quantity);
-    }, 0);
+    const subtotal = resolvedItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const deliveryFee = calculateDeliveryFee(resolvedItems);
+    const totalAmount = subtotal + deliveryFee;
 
-    const deliveryCharges = Number(subtotal) >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
-    const totalAmount = Number(subtotal) + Number(deliveryCharges);
+    const orderId = await generateOrderId();
 
-    // Generate unique order number
-    const orderNumber = await generateOrderNumber();
-
-    // Create order
     const order = new Order({
-      orderNumber,
-      customerName: customerName.trim(),
-      customerPhone,
-      customerEmail: customerEmail?.trim().toLowerCase() || undefined,
-      customerAddress: customerAddress.trim(),
-      customerCity: customerCity.trim(),
-      customerPostalCode: customerPostalCode?.trim() || undefined,
+      orderId,
+      shopName: shopName.trim(),
+      ownerName: ownerName.trim(),
+      phone,
+      city: city.trim(),
       items: resolvedItems,
       subtotal,
-      deliveryCharges,
+      deliveryFee,
+      discount: 0,
       totalAmount,
-      paymentMethod,
-      paymentStatus: 'pending',
+      totalPaid: 0,
+      totalDue: totalAmount,
+      paymentStatus: 'unpaid',
       orderStatus: 'pending',
-      transactionId: transactionId?.trim() || undefined,
-      notes: notes?.trim() || undefined,
-      emailSent: false,
+      paymentSchedule: paymentSchedule || 'weekly',
+      note: note?.trim() || undefined,
     });
 
     await order.save();
 
+    // Map to a compatible structure for sendOrderEmail PDF helper
     const orderData = {
-      orderNumber:      order.orderNumber,
-      customerName:     order.customerName,
-      customerPhone:    order.customerPhone,
-      customerEmail:    order.customerEmail,
-      customerAddress:  order.customerAddress,
-      customerCity:     order.customerCity,
-      items:            order.items.map((item: any) => ({
+      orderNumber:      order.orderId,
+      customerName:     order.ownerName,
+      customerPhone:    order.phone,
+      customerEmail:    'Not provided',
+      customerAddress:  order.shopName,
+      customerCity:     order.city,
+      items:            order.items.map((item) => ({
         name:     item.name,
-        size:     item.size,
-        color:    item.color,
+        size:     item.size || 0,
+        color:    item.color || 'N/A',
         quantity: item.quantity,
         price:    item.price,
       })),
       subtotal:         order.subtotal,
-      deliveryCharges:  order.deliveryCharges,
+      deliveryCharges:  order.deliveryFee,
       totalAmount:      order.totalAmount,
-      paymentMethod:    order.paymentMethod,
+      paymentMethod:    'cod',
       paymentStatus:    order.paymentStatus,
-      transactionId:    order.transactionId,
-      notes:            order.notes,
+      notes:            order.note,
       createdAt:        order.createdAt,
     };
 
-    // Send admin email ASYNC — do NOT await (fire-and-forget)
+    // Send admin email ASYNC (fire-and-forget)
     sendOrderEmail(orderData).catch((err: Error) =>
-      console.error('Email error:', err)
+      console.error('Email notification failed:', err)
     );
 
-    order.emailSent = true;
-    await order.save();
-
-    // Decrement stock atomically using $inc
+    // Atomically decrement stock
     for (const item of resolvedItems) {
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity },
       });
     }
 
-
     res.status(201).json({
       success: true,
       data: { order },
-      message: 'Order placed successfully',
+      message: 'Wholesale guest order placed successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to place order',
+      message: 'Failed to place B2B wholesale order',
       error: (error as Error).message,
     });
   }
 });
 
-// GET /api/orders - ADMIN ONLY with pagination and filters
-router.get('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const {
-      page = '1',
-      limit = '20',
-      orderStatus,
-      paymentMethod,
-      search,
-      dateFrom,
-      dateTo,
-    } = req.query as Record<string, string | undefined>;
-
-    const query: Record<string, unknown> = {};
-
-    if (dateFrom) {
-      query['createdAt'] = {
-        ...((query['createdAt'] as object) || {}),
-        $gte: new Date(dateFrom + 'T00:00:00.000Z'),
-      };
-    }
-    if (dateTo) {
-      query['createdAt'] = {
-        ...((query['createdAt'] as object) || {}),
-        $lte: new Date(dateTo + 'T23:59:59.999Z'),
-      };
-    }
-
-    if (orderStatus && orderStatus !== 'all') {
-      query['orderStatus'] = orderStatus;
-    }
-
-    if (paymentMethod && paymentMethod !== 'all') {
-      query['paymentMethod'] = paymentMethod;
-    }
-
-    if (search) {
-      query['$or'] = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { customerPhone: { $regex: search, $options: 'i' } },
-        { customerName: { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
-    const skip = (pageNum - 1) * limitNum;
-
-    const [orders, total] = await Promise.all([
-      Order.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
-      Order.countDocuments(query),
-    ]);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        orders,
-        total,
-        pages: Math.ceil(total / limitNum),
-        currentPage: pageNum,
-        limit: limitNum,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch orders',
-      error: (error as Error).message,
-    });
-  }
-});
-
-// GET /api/orders/by-number/:orderNumber — find by orderNumber field
-router.get('/by-number/:orderNumber', async (req: Request, res: Response, next): Promise<void> => {
+// GET /api/orders/by-number/:orderId - PUBLIC — find by orderId
+router.get('/by-number/:orderId', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const order = await Order.findOne({
-      orderNumber: req.params.orderNumber
-    }).populate('items.productId', 'name images')
+      orderId: req.params.orderId
+    }).populate('items.productId', 'name images');
 
     if (!order) {
       res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: 'Wholesale order not found'
       });
       return;
     }
@@ -345,33 +226,8 @@ router.get('/by-number/:orderNumber', async (req: Request, res: Response, next):
   }
 });
 
-// GET /api/orders/:id - ADMIN ONLY — single order with populated products
-router.get('/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params as { id: string };
-
-    const order = await Order.findById(id)
-      .populate('items.productId', 'name slug images category')
-      .lean();
-
-    if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
-      return;
-    }
-
-    res.status(200).json({ success: true, data: order });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch order',
-      error: (error as Error).message,
-    });
-  }
-});
-
-// GET /api/orders/:id/receipt — Download PDF receipt
-// PUBLIC (customer can download their own receipt using orderNumber)
-router.get('/:id/receipt', async (req: Request, res: Response, next): Promise<void> => {
+// GET /api/orders/:id/receipt — Download PDF receipt (PUBLIC)
+router.get('/:id/receipt', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('items.productId', 'name images');
@@ -385,26 +241,25 @@ router.get('/:id/receipt', async (req: Request, res: Response, next): Promise<vo
     }
 
     const orderData = {
-      orderNumber:      order.orderNumber,
-      customerName:     order.customerName,
-      customerPhone:    order.customerPhone,
-      customerEmail:    order.customerEmail,
-      customerAddress:  order.customerAddress,
-      customerCity:     order.customerCity,
-      items:            order.items.map((item: any) => ({
+      orderNumber:      order.orderId,
+      customerName:     order.ownerName,
+      customerPhone:    order.phone,
+      customerEmail:    'Not provided',
+      customerAddress:  order.shopName,
+      customerCity:     order.city,
+      items:            order.items.map((item) => ({
         name:     item.name,
-        size:     item.size,
-        color:    item.color,
+        size:     item.size || 0,
+        color:    item.color || 'N/A',
         quantity: item.quantity,
         price:    item.price,
       })),
       subtotal:         order.subtotal,
-      deliveryCharges:  order.deliveryCharges,
+      deliveryCharges:  order.deliveryFee,
       totalAmount:      order.totalAmount,
-      paymentMethod:    order.paymentMethod,
+      paymentMethod:    'cod',
       paymentStatus:    order.paymentStatus,
-      transactionId:    order.transactionId,
-      notes:            order.notes,
+      notes:            order.note,
       createdAt:        order.createdAt,
     };
 
@@ -412,58 +267,13 @@ router.get('/:id/receipt', async (req: Request, res: Response, next): Promise<vo
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="Order_${order.orderNumber}.pdf"`,
+      'Content-Disposition': `attachment; filename="Order_${order.orderId}.pdf"`,
       'Content-Length': pdfBuffer.length,
     });
 
     res.send(pdfBuffer);
-
   } catch (error) {
     next(error);
-  }
-});
-
-// PATCH /api/orders/:id/status - ADMIN ONLY
-router.patch('/:id/status', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params as { id: string };
-    const { orderStatus, transactionId } = req.body as {
-      orderStatus?: string;
-      transactionId?: string;
-    };
-
-    const validStatuses = [
-      'pending', 'confirmed', 'processing', 'shipped',
-      'delivered', 'cancelled', 'returned',
-    ];
-
-    if (orderStatus && !validStatuses.includes(orderStatus)) {
-      res.status(400).json({ success: false, message: 'Invalid order status' });
-      return;
-    }
-
-    const updateData: Record<string, string> = {};
-    if (orderStatus) updateData['orderStatus'] = orderStatus;
-    if (transactionId) updateData['transactionId'] = transactionId;
-
-    const order = await Order.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    );
-
-    if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
-      return;
-    }
-
-    res.status(200).json({ success: true, data: order });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update order status',
-      error: (error as Error).message,
-    });
   }
 });
 

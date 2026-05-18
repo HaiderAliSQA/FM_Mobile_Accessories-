@@ -101,6 +101,15 @@ export interface OrderItem {
 export interface Order {
   _id: string;
   orderNumber: string;
+  orderId?: string;
+  shopName?: string;
+  ownerName?: string;
+  phone?: string;
+  city?: string;
+  paymentSchedule?: string;
+  deliveryFee?: number;
+  totalPaid?: number;
+  totalDue?: number;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
@@ -251,6 +260,10 @@ export interface WholesaleOrder {
   _id: string;
   orderId: string;
   shopKeeper: ShopKeeper;
+  shopName?: string;
+  ownerName?: string;
+  phone?: string;
+  city?: string;
   items: WholesaleOrderItem[];
   subtotal: number;
   deliveryFee: number;
@@ -356,7 +369,7 @@ export interface WholesaleStatsResponse {
 
 export interface RecordPaymentPayload {
   orderId: string;
-  shopKeeperId: string;
+  shopKeeperId?: string;
   amount: number;
   method: WholesalePaymentMethod;
   transactionId?: string;

@@ -40,11 +40,14 @@ const Navbar: React.FC = () => {
         {/* TOP ROW: LOGO | SEARCH (DESKTOP) | CART/MENU */}
         <div className="flex items-center justify-between gap-4 md:gap-8">
           {/* Logo */}
-          <Link to="/" className="flex items-center shrink-0">
-            <span className="font-heading text-xl md:text-2xl font-extrabold tracking-tight">
+          <Link to="/" className="flex items-center shrink-0 gap-3">
+            <span className="font-heading text-xl md:text-2xl font-extrabold tracking-tight flex items-center">
               <span className="text-electric">FH</span>
               <span className="text-white ml-2 hidden sm:inline">Mobile Accessories</span>
               <span className="text-white ml-1 inline sm:hidden text-lg">Mobile</span>
+            </span>
+            <span className="bg-electric/10 text-electric border border-electric/30 px-2 py-0.5 rounded text-[9px] md:text-[10px] font-extrabold uppercase tracking-[0.2em] shadow-glow-blue/10">
+              WHOLESALE
             </span>
           </Link>
 

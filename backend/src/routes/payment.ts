@@ -55,8 +55,8 @@ router.post('/jazzcash', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (order.paymentStatus !== 'pending') {
-      res.status(400).json({ success: false, message: 'Order payment is not pending' });
+    if (order.paymentStatus === 'paid') {
+      res.status(400).json({ success: false, message: 'Order payment is already paid' });
       return;
     }
 
@@ -168,8 +168,8 @@ router.post('/easypaisa', async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (order.paymentStatus !== 'pending') {
-      res.status(400).json({ success: false, message: 'Order payment is not pending' });
+    if (order.paymentStatus === 'paid') {
+      res.status(400).json({ success: false, message: 'Order payment is already paid' });
       return;
     }
 

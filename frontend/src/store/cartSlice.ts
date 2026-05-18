@@ -145,7 +145,11 @@ export const selectCartSubtotal = (state: { cart: CartState }): number =>
     0
   );
 
-export const selectCartDelivery = (_state: { cart: CartState }): number => 300;
+export const selectCartDelivery = (state: { cart: CartState }): number => {
+  const count = selectCartItemCount(state);
+  if (count === 0) return 0;
+  return count === 1 ? 200 : 0;
+};
 
 export const selectCartTotal = (state: { cart: CartState }): number =>
   Number(selectCartSubtotal(state)) + Number(selectCartDelivery(state));

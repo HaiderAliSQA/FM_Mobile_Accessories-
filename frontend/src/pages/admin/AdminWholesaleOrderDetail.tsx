@@ -133,17 +133,16 @@ const AdminWholesaleOrderDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Shop Keeper Info */}
-          {shopKeeper && (
+          {/* B2B Guest / Shop Keeper Details */}
+          {(order.shopName || shopKeeper) && (
             <div className="bg-navy-mid border border-navy-light rounded-xl p-6">
-              <h3 className="text-white font-bold uppercase tracking-widest text-[12px] mb-4">Shop Keeper Details</h3>
+              <h3 className="text-white font-bold uppercase tracking-widest text-[12px] mb-4">B2B Customer Details</h3>
               <div className="space-y-2 text-[13px]">
                 {[
-                  { label: 'Shop', value: shopKeeper.shopName },
-                  { label: 'Owner', value: shopKeeper.name },
-                  { label: 'Phone', value: shopKeeper.phone },
-                  { label: 'City', value: shopKeeper.city },
-                  { label: 'Address', value: shopKeeper.address || '—' },
+                  { label: 'Shop Name', value: order.shopName || shopKeeper?.shopName || '—' },
+                  { label: 'Owner Name', value: order.ownerName || shopKeeper?.name || '—' },
+                  { label: 'Phone', value: order.phone || shopKeeper?.phone || '—' },
+                  { label: 'City', value: order.city || shopKeeper?.city || '—' },
                 ].map((r) => (
                   <div key={r.label} className="flex justify-between py-1.5 border-b border-navy-light/50">
                     <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{r.label}</span>
@@ -151,9 +150,6 @@ const AdminWholesaleOrderDetail: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <button onClick={() => navigate(`/admin/shopkeepers/${shopKeeper._id}`)} className="mt-4 text-electric text-[12px] font-bold hover:underline flex items-center gap-1">
-                View Full Ledger →
-              </button>
             </div>
           )}
 

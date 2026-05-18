@@ -9,38 +9,32 @@ export interface IOrderItem {
   color?: string;
   quantity: number;
   image: string;
+  subtotal: number;
 }
 
-export type PaymentMethod = 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cod';
-export type PaymentStatus = 'pending' | 'paid' | 'failed';
-export type OrderStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'cancelled'
-  | 'returned';
+export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'delivered' | 'cancelled';
+export type PaymentSchedule = 'weekly' | 'monthly' | 'immediate';
 
 export interface IOrder extends Document {
   _id: mongoose.Types.ObjectId;
-  orderNumber: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  customerAddress: string;
-  customerCity: string;
-  customerPostalCode?: string;
+  orderId: string;
+  shopName: string;
+  ownerName: string;
+  phone: string;
+  city: string;
   items: IOrderItem[];
   subtotal: number;
-  deliveryCharges: number;
+  deliveryFee: number;
+  discount: number;
   totalAmount: number;
-  paymentMethod: PaymentMethod;
+  totalPaid: number;
+  totalDue: number;
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
-  transactionId?: string;
-  notes?: string;
-  emailSent: boolean;
+  paymentSchedule: PaymentSchedule;
+  note?: string;
+  adminNote?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,46 +52,37 @@ const orderItemSchema = new Schema<IOrderItem>(
     color: { type: String, default: undefined },
     quantity: { type: Number, required: true, min: 1 },
     image: { type: String, required: true },
+    subtotal: { type: Number, required: true },
   },
   { _id: false }
 );
 
 const orderSchema = new Schema<IOrder>(
   {
-    orderNumber: {
+    orderId: {
       type: String,
       required: true,
       unique: true,
     },
-    customerName: {
+    shopName: {
       type: String,
-      required: [true, 'Customer name is required'],
+      required: [true, 'Shop Name is required'],
       trim: true,
     },
-    customerPhone: {
+    ownerName: {
       type: String,
-      required: [true, 'Customer phone is required'],
+      required: [true, 'Owner/Contact Name is required'],
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: [true, 'Phone number is required'],
       match: [/^03[0-9]{9}$/, 'Phone must be a valid Pakistani number (03XXXXXXXXX)'],
-    },
-    customerEmail: {
-      type: String,
-      default: undefined,
-      trim: true,
-      lowercase: true,
-    },
-    customerAddress: {
-      type: String,
-      required: [true, 'Customer address is required'],
       trim: true,
     },
-    customerCity: {
+    city: {
       type: String,
-      required: [true, 'Customer city is required'],
-      trim: true,
-    },
-    customerPostalCode: {
-      type: String,
-      default: undefined,
+      required: [true, 'City is required'],
       trim: true,
     },
     items: {
@@ -113,9 +98,14 @@ const orderSchema = new Schema<IOrder>(
       required: true,
       min: 0,
     },
-    deliveryCharges: {
+    deliveryFee: {
       type: Number,
-      default: 300,
+      default: 0,
+      min: 0,
+    },
+    discount: {
+      type: Number,
+      default: 0,
       min: 0,
     },
     totalAmount: {
@@ -123,42 +113,38 @@ const orderSchema = new Schema<IOrder>(
       required: true,
       min: 0,
     },
-    paymentMethod: {
-      type: String,
-      enum: ['jazzcash', 'easypaisa', 'bank_transfer', 'cod'],
-      required: [true, 'Payment method is required'],
+    totalPaid: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    totalDue: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'paid', 'failed'],
-      default: 'pending',
+      enum: ['unpaid', 'partial', 'paid'],
+      default: 'unpaid',
     },
     orderStatus: {
       type: String,
-      enum: [
-        'pending',
-        'confirmed',
-        'processing',
-        'shipped',
-        'delivered',
-        'cancelled',
-        'returned',
-      ],
+      enum: ['pending', 'confirmed', 'processing', 'delivered', 'cancelled'],
       default: 'pending',
     },
-    transactionId: {
+    paymentSchedule: {
       type: String,
-      default: undefined,
+      enum: ['weekly', 'monthly', 'immediate'],
+      default: 'weekly',
+    },
+    note: {
+      type: String,
       trim: true,
     },
-    notes: {
+    adminNote: {
       type: String,
-      default: undefined,
       trim: true,
-    },
-    emailSent: {
-      type: Boolean,
-      default: false,
     },
   },
   {
@@ -166,9 +152,24 @@ const orderSchema = new Schema<IOrder>(
   }
 );
 
-orderSchema.index({ customerPhone: 1 });
+// Recalculate totalDue and paymentStatus automatically before saving
+orderSchema.pre<IOrder>('save', function (next) {
+  this.totalDue = Math.max(0, this.totalAmount - this.totalPaid);
+  
+  if (this.totalPaid === 0) {
+    this.paymentStatus = 'unpaid';
+  } else if (this.totalPaid >= this.totalAmount) {
+    this.paymentStatus = 'paid';
+  } else {
+    this.paymentStatus = 'partial';
+  }
+  
+  next();
+});
+
+orderSchema.index({ phone: 1 });
 orderSchema.index({ orderStatus: 1 });
-orderSchema.index({ paymentMethod: 1 });
+orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 
 const Order: Model<IOrder> = mongoose.model<IOrder>('Order', orderSchema);

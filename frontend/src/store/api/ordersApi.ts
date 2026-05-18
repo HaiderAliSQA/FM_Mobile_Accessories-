@@ -6,22 +6,18 @@ import { RootState } from '../store';
 const API_URL = import.meta.env['VITE_API_URL'] as string ?? 'http://localhost:5002';
 
 interface PlaceOrderPayload {
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  customerAddress: string;
-  customerCity: string;
-  customerPostalCode?: string;
+  shopName: string;
+  ownerName: string;
+  phone: string;
+  city: string;
   items: Array<{
     productId: string;
     size?: number;
     color?: string;
     quantity: number;
-    price: number;
   }>;
-  paymentMethod: string;
-  transactionId?: string;
-  notes?: string;
+  paymentSchedule?: 'weekly' | 'monthly' | 'immediate';
+  note?: string;
 }
 
 export const ordersApi = createApi({

@@ -119,6 +119,8 @@ const AdminWholesaleOrders: React.FC = () => {
                 <tbody className="divide-y divide-navy-light">
                   {orders.map((order) => {
                     const sk = typeof order.shopKeeper === 'object' ? order.shopKeeper : null;
+                    const shopName = order.shopName || sk?.shopName || '—';
+                    const city = order.city || sk?.city || '—';
                     const badge = getPaymentStatusBadge(order.paymentStatus);
                     return (
                       <tr key={order._id} className="hover:bg-navy-light/20 transition-colors group">
@@ -127,8 +129,8 @@ const AdminWholesaleOrders: React.FC = () => {
                             {order.orderId}
                           </button>
                         </td>
-                        <td className="px-4 py-4 text-white font-bold text-[13px]">{sk?.shopName || '—'}</td>
-                        <td className="px-4 py-4 text-gray-400 text-[12px]">{sk?.city || '—'}</td>
+                        <td className="px-4 py-4 text-white font-bold text-[13px]">{shopName}</td>
+                        <td className="px-4 py-4 text-gray-400 text-[12px]">{city}</td>
                         <td className="px-4 py-4 text-white font-bold">PKR {order.totalAmount.toLocaleString()}</td>
                         <td className="px-4 py-4 text-emerald-400 font-bold">PKR {order.totalPaid.toLocaleString()}</td>
                         <td className={`px-4 py-4 font-bold ${order.totalDue > 0 ? 'text-red-400' : 'text-emerald-400'}`}>

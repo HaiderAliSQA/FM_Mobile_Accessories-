@@ -15,6 +15,9 @@ import uploadRoutes from './routes/upload';
 import shopKeeperRoutes from './routes/shopKeepers';
 import wholesaleOrderRoutes from './routes/wholesaleOrders';
 import wholesalePaymentRoutes from './routes/wholesalePayments';
+import adminOrderRoutes from './routes/adminOrders';
+import adminPaymentRoutes from './routes/adminPayments';
+import adminDashboardRoutes from './routes/adminDashboard';
 import errorHandler, { notFoundHandler } from './middleware/errorHandler';
 import customLogger from './middleware/customLogger';
 
@@ -84,6 +87,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/admin/shopkeepers', shopKeeperRoutes);
 app.use('/api/admin/wholesale-orders', wholesaleOrderRoutes);
 app.use('/api/admin/wholesale-payments', wholesalePaymentRoutes);
+app.use('/api/admin/orders', adminOrderRoutes);
+app.use('/api/admin/payments', adminPaymentRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
 
 // ─── Error Handling ───────────────────────────────────────────────────────────
 

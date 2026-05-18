@@ -147,6 +147,20 @@ const CartDrawer: React.FC = () => {
         {/* Footer */}
         {items.length > 0 && (
           <div className="p-8 bg-navy-mid border-t border-navy-light flex flex-col gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
+            
+            {/* Wholesale B2B Dynamic Delivery Alert */}
+            <div className="mb-2 animate-pulse-glow">
+              {count === 1 ? (
+                <div className="bg-orange-500/10 border border-orange-500/20 text-orange-400 p-4 rounded-2xl text-[10px] font-extrabold uppercase tracking-[0.15em] text-center leading-relaxed">
+                  ⚠️ Add <span className="underline text-white font-black">1 more item</span> to get <span className="text-electric">FREE TCS DELIVERY</span>!
+                </div>
+              ) : (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl text-[10px] font-extrabold uppercase tracking-[0.15em] text-center leading-relaxed">
+                  🎉 Wholesale Bonus: <span className="text-white font-black">FREE TCS DELIVERY</span> applied!
+                </div>
+              )}
+            </div>
+
             <div className="space-y-3 mb-2">
               <div className="flex justify-between font-dm text-[11px] text-white-3 font-bold tracking-widest uppercase">
                 <span>SUBTOTAL VALUE</span>
@@ -154,8 +168,8 @@ const CartDrawer: React.FC = () => {
               </div>
               <div className="flex justify-between font-dm text-[11px] text-white-3 font-bold tracking-widest uppercase">
                 <span>DELIVERY CHARGES (TCS)</span>
-                <span className="text-white text-[13px]">
-                  {formatPrice(deliveryCharges)}
+                <span className={deliveryCharges === 0 ? "text-emerald-400 text-[13px] font-bold" : "text-white text-[13px]"}>
+                  {deliveryCharges === 0 ? "FREE" : formatPrice(deliveryCharges)}
                 </span>
               </div>
             </div>
@@ -163,14 +177,14 @@ const CartDrawer: React.FC = () => {
             <div className="h-px w-full bg-fm-border my-2"></div>
             
             <div className="flex justify-between items-baseline mb-6">
-              <span className="font-playfair text-[22px] font-bold text-white tracking-tighter uppercase">ESTIMATED TOTAL</span>
-              <span className="font-playfair text-[26px] font-bold text-white-2">{formatPrice(total)}</span>
+              <span className="font-playfair text-[20px] font-bold text-white tracking-tighter uppercase">ESTIMATED TOTAL</span>
+              <span className="font-playfair text-[24px] font-bold text-electric">{formatPrice(total)}</span>
             </div>
 
             <div className="flex flex-col gap-3">
               <button 
                 onClick={() => { closeCart(); navigate('/checkout'); }}
-                className="w-full bg-navy-light text-white font-dm py-5 tracking-[0.2em] text-[11px] font-bold uppercase transition-all duration-500 hover:bg-fm-gold hover:shadow-xl flex justify-center items-center gap-3 btn-magnetic"
+                className="w-full bg-electric hover:shadow-glow-blue text-white font-dm py-5 tracking-[0.2em] text-[11px] font-bold uppercase transition-all duration-300 flex justify-center items-center gap-3 btn-magnetic rounded-xl"
               >
                 PROCEED TO CHECKOUT
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
