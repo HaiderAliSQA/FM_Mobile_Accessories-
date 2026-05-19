@@ -33,6 +33,14 @@ const AdminShopKeepers: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.phone.startsWith('03') || form.phone.length !== 11) {
+      toast.error('⚠️ Phone number must start with 03 and be exactly 11 digits!');
+      return;
+    }
+    if (form.whatsapp && (!form.whatsapp.startsWith('0') || form.whatsapp.length !== 11)) {
+      toast.error('⚠️ WhatsApp number must start with 0 and be exactly 11 digits!');
+      return;
+    }
     const payload = { ...form, creditLimit: Number(form.creditLimit) };
     try {
       if (editingShopKeeper) {
@@ -196,8 +204,8 @@ const AdminShopKeepers: React.FC = () => {
                 {[
                   { label: 'Owner Name *', key: 'name', placeholder: 'Muhammad Arif', required: true },
                   { label: 'Shop Name *', key: 'shopName', placeholder: 'Karachi Phones', required: true },
-                  { label: 'Phone *', key: 'phone', placeholder: '0312-XXXXXXX', required: true },
-                  { label: 'WhatsApp', key: 'whatsapp', placeholder: '0312-XXXXXXX', required: false },
+                  { label: 'Phone *', key: 'phone', placeholder: 'e.g. 03123456789', required: true },
+                  { label: 'WhatsApp', key: 'whatsapp', placeholder: 'e.g. 03123456789', required: false },
                   { label: 'City *', key: 'city', placeholder: 'Karachi', required: true },
                   { label: 'Credit Limit (PKR)', key: 'creditLimit', placeholder: '100000', required: false },
                 ].map((f) => (
@@ -206,7 +214,27 @@ const AdminShopKeepers: React.FC = () => {
                     <input
                       type={f.key === 'creditLimit' ? 'number' : 'text'}
                       value={form[f.key as keyof typeof form]}
-                      onChange={(e) => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                      onChange={(e) => {
+                        let val = e.target.value;
+                        if (f.key === 'phone' || f.key === 'whatsapp') {
+                          val = val.replace(/\D/g, '');
+                          if (val.length > 0 && val[0] !== '0') {
+                            val = '';
+                          }
+                          val = val.slice(0, 11);
+                        } else if (f.key === 'name' || f.key === 'city') {
+                          val = val.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                        } else if (f.key === 'shopName') {
+                          val = val.slice(0, 80);
+                        }
+                        setForm(p => ({ ...p, [f.key]: val }));
+                      }}
+                      maxLength={
+                        f.key === 'phone' || f.key === 'whatsapp' ? 11 :
+                        f.key === 'name' || f.key === 'city' ? 50 :
+                        f.key === 'shopName' ? 80 : undefined
+                      }
+                      inputMode={f.key === 'phone' || f.key === 'whatsapp' ? 'numeric' : undefined}
                       placeholder={f.placeholder}
                       required={f.required}
                       className="w-full bg-navy-dark border border-navy-light px-3 py-2.5 text-white text-[13px] rounded-lg outline-none focus:border-electric transition-all placeholder-gray-600"

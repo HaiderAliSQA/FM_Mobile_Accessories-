@@ -197,9 +197,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       message: 'Wholesale guest order placed successfully',
     });
   } catch (error) {
+    console.error('❌ B2B ORDER PLACEMENT CRITICAL EXCEPTION:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to place B2B wholesale order',
+      message: (error as Error).message || 'Failed to place B2B wholesale order',
       error: (error as Error).message,
     });
   }
