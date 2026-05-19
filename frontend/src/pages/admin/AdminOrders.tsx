@@ -102,13 +102,14 @@ const AdminOrders: React.FC = () => {
             </div>
           ) : (
             <table className="w-full text-left text-[14px] whitespace-nowrap border-separate border-spacing-0">
-              <thead className="bg-navy-mid text-gray-400 uppercase tracking-[0.2em] text-[10px] font-bold border-b border-navy-light sticky top-[80px] z-20 shadow-xs">
+              <thead className="bg-navy-mid text-gray-400 uppercase tracking-[0.2em] text-[10px] font-bold border-b border-navy-light">
                 <tr>
                   <th className="px-4 py-5 w-10 text-center text-electric">#</th>
                   <th className="px-4 py-5">Order ID</th>
                   <th className="px-4 py-5">Date</th>
-                  <th className="px-4 py-5">Customer & Contact</th>
-                  <th className="px-4 py-5">Payment Details</th>
+                  <th className="px-4 py-5">Customer & Shop Details</th>
+                  <th className="px-4 py-5">City</th>
+                  <th className="px-4 py-5">Payment Terms</th>
                   <th className="px-4 py-5">Total Amount</th>
                   <th className="px-4 py-5 text-center">Fulfillment Status</th>
                 </tr>
@@ -120,7 +121,7 @@ const AdminOrders: React.FC = () => {
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-4 py-6">
-                      <div className="font-bold text-white text-[15px] font-playfair">#{order.orderNumber ? order.orderNumber.replace(/^KM-/, 'FH-') : ''}</div>
+                      <div className="font-bold text-white text-[15px] font-playfair">#{order.orderId || order.orderNumber || ''}</div>
                       <div className="text-gray-400 text-[10px] mt-1 uppercase font-bold tracking-widest">{order.items.length} Product(s)</div>
                     </td>
                     <td className="px-4 py-6 text-gray-400 text-[12px] font-medium">
@@ -128,13 +129,17 @@ const AdminOrders: React.FC = () => {
                     </td>
                     <td className="px-4 py-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-white text-[13px] uppercase tracking-wide">{order.customerName}</span>
-                        <span className="text-gray-400 text-[11px] font-medium">{order.customerPhone}</span>
+                        <span className="font-bold text-white text-[13px] uppercase tracking-wide">{order.ownerName || order.customerName || '—'}</span>
+                        <span className="text-gray-300 text-[11px] font-medium">{order.shopName || order.customerAddress || '—'}</span>
+                        <span className="text-gray-400 text-[10px]">{order.phone || order.customerPhone || '—'}</span>
                       </div>
+                    </td>
+                    <td className="px-4 py-6 text-gray-400 text-[12px] font-medium">
+                      {order.city || order.customerCity || '—'}
                     </td>
                     <td className="px-4 py-6">
                       <div className="flex flex-col gap-1.5">
-                        <span className="uppercase tracking-[0.1em] text-[10px] font-bold text-white">{order.paymentMethod}</span>
+                        <span className="uppercase tracking-[0.1em] text-[10px] font-bold text-white">{order.paymentSchedule || order.paymentMethod || 'COD'}</span>
                         <span className={`inline-block w-fit px-3 py-1 rounded-full text-[9px] uppercase font-bold border ${getStatusColor(order.paymentStatus)}`}>
                           {order.paymentStatus}
                         </span>

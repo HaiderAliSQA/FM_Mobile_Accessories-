@@ -56,14 +56,14 @@ export const ordersApi = createApi({
       }
     >({
       query: (params) => ({
-        url: '/orders',
+        url: '/admin/orders',
         params,
       }),
       providesTags: ['Order'],
     }),
 
     getOrderById: builder.query<ApiResponse<Order>, string>({
-      query: (id) => `/orders/${id}`,
+      query: (id) => `/admin/orders/${id}`,
       providesTags: (_result, _err, id) => [{ type: 'Order', id }],
     }),
 
@@ -77,8 +77,8 @@ export const ordersApi = createApi({
       { id: string; orderStatus?: string; transactionId?: string }
     >({
       query: ({ id, ...body }) => ({
-        url: `/orders/${id}/status`,
-        method: 'PATCH',
+        url: `/admin/orders/${id}/status`,
+        method: 'PUT',
         body,
       }),
       invalidatesTags: (_result, _err, { id }) => [{ type: 'Order', id }, 'Order'],

@@ -71,20 +71,20 @@ const AdminShopKeepers: React.FC = () => {
             <h1 className="font-heading text-white text-3xl font-bold">Shop Keepers</h1>
             <p className="text-gray-400 tracking-widest text-[10px] uppercase font-bold mt-1">Wholesale Account Management</p>
           </div>
-          <div className="flex gap-3 items-center">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div className="relative w-full sm:w-auto">
               <input
                 type="text"
                 placeholder="Search shops, names, phones..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="bg-navy-mid border border-navy-light px-10 py-2.5 text-[13px] text-white placeholder-gray-500 outline-none focus:border-electric transition-all rounded-lg w-64"
+                className="bg-navy-mid border border-navy-light px-10 py-2.5 text-[13px] text-white placeholder-gray-500 outline-none focus:border-electric transition-all rounded-lg w-full sm:w-64"
               />
               <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <button onClick={openAdd} className="bg-electric text-white px-5 py-2.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center gap-2">
+            <button onClick={openAdd} className="bg-electric text-white px-5 py-2.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Add Shop Keeper
             </button>

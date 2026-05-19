@@ -24,7 +24,7 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { items, subtotal, deliveryCharges, total, clearCart } = useCart();
-  const [placeOrder, { isLoading, error }] = usePlaceOrderMutation();
+  const [placeOrder, { isLoading, error, isSuccess }] = usePlaceOrderMutation();
 
   const {
     register,
@@ -43,10 +43,10 @@ const Checkout: React.FC = () => {
   const isSingleItem = totalQuantity === 1;
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !isSuccess) {
       navigate('/');
     }
-  }, [items, navigate]);
+  }, [items, navigate, isSuccess]);
 
   useEffect(() => {
     if (isSingleItem) {
