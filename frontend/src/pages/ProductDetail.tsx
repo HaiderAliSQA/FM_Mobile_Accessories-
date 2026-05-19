@@ -23,6 +23,12 @@ const ProductDetail: React.FC = () => {
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
+  // Reset quantity and main image index when slug changes to avoid state carryover
+  React.useEffect(() => {
+    setQuantity(1);
+    setMainImageIndex(0);
+  }, [slug]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-navy-dark flex items-center justify-center">
