@@ -35,6 +35,7 @@ export interface IOrder extends Document {
   paymentSchedule: PaymentSchedule;
   note?: string;
   adminNote?: string;
+  orderType: 'customer' | 'wholesale';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -146,6 +147,18 @@ const orderSchema = new Schema<IOrder>(
       type: String,
       trim: true,
     },
+    orderType: {
+      type: String,
+      enum: ['customer', 'wholesale'],
+      required: true,
+      default: function(this: any) {
+        if (this.items && this.items.length > 0) {
+          const totalQty = this.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+          return totalQty === 1 ? 'customer' : 'wholesale';
+        }
+        return 'customer';
+      }
+    },
   },
   {
     timestamps: true,
@@ -171,6 +184,7 @@ orderSchema.index({ phone: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ orderType: 1 });
 
 const Order: Model<IOrder> = mongoose.model<IOrder>('Order', orderSchema);
 

@@ -17,6 +17,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
       search,
       dateFrom,
       dateTo,
+      orderType,
     } = req.query as Record<string, string | undefined>;
 
     const query: Record<string, unknown> = {};
@@ -40,6 +41,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
 
     if (paymentStatus && paymentStatus !== 'all') {
       query['paymentStatus'] = paymentStatus;
+    }
+
+    if (orderType && orderType !== 'all') {
+      query['orderType'] = orderType;
     }
 
     if (search) {

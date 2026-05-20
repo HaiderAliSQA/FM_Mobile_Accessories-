@@ -49,10 +49,12 @@ export const ordersApi = createApi({
         page?: number;
         limit?: number;
         orderStatus?: string;
+        paymentStatus?: string;
         paymentMethod?: string;
         search?: string;
         dateFrom?: string;
         dateTo?: string;
+        orderType?: string;
       }
     >({
       query: (params) => ({
@@ -83,6 +85,53 @@ export const ordersApi = createApi({
       }),
       invalidatesTags: (_result, _err, { id }) => [{ type: 'Order', id }, 'Order'],
     }),
+
+    recordPayment: builder.mutation<
+      ApiResponse<any>,
+      {
+        orderId: string;
+        amount: number;
+        method: string;
+        transactionId?: string;
+        paymentDate?: string;
+        installmentNote?: string;
+      }
+    >({
+      query: (body) => ({
+        url: '/admin/payments',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Order'],
+    }),
+
+    deletePayment: builder.mutation<ApiResponse<null>, string>({
+      query: (id) => ({
+        url: `/admin/payments/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Order'],
+    }),
+
+    updateAdminNote: builder.mutation<ApiResponse<Order>, { id: string; adminNote: string }>({
+      query: ({ id, adminNote }) => ({
+        url: `/admin/orders/${id}/note`,
+        method: 'PUT',
+        body: { adminNote },
+      }),
+      invalidatesTags: (_result, _err, { id }) => [{ type: 'Order', id }, 'Order'],
+    }),
+
+    getPayments: builder.query<
+      ApiResponse<any[]>,
+      { limit?: number; orderId?: string; phone?: string }
+    >({
+      query: (params) => ({
+        url: '/admin/payments',
+        params,
+      }),
+      providesTags: ['Order'],
+    }),
   }),
 });
 
@@ -92,4 +141,8 @@ export const {
   useGetOrderByIdQuery,
   useGetOrderByNumberQuery,
   useUpdateOrderStatusMutation,
+  useRecordPaymentMutation,
+  useDeletePaymentMutation,
+  useUpdateAdminNoteMutation,
+  useGetPaymentsQuery,
 } = ordersApi;

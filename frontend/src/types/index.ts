@@ -96,6 +96,7 @@ export interface OrderItem {
   color?: string;
   quantity: number;
   image: string;
+  subtotal?: number;
 }
 
 export interface Order {
@@ -125,7 +126,11 @@ export interface Order {
   orderStatus: OrderStatus;
   transactionId?: string;
   notes?: string;
+  note?: string;
+  adminNote?: string;
+  discount?: number;
   emailSent: boolean;
+  orderType?: 'customer' | 'wholesale';
   createdAt: string;
   updatedAt: string;
 }

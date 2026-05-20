@@ -129,7 +129,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     const subtotal = resolvedItems.reduce((sum, item) => sum + item.subtotal, 0);
-    const deliveryFee = calculateDeliveryFee(resolvedItems);
+    const totalQuantity = resolvedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const orderType = totalQuantity === 1 ? 'customer' : 'wholesale';
+    const deliveryFee = totalQuantity === 1 ? 200 : 0;
     const totalAmount = subtotal + deliveryFee;
 
     const orderId = await generateOrderId();
@@ -151,6 +153,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       orderStatus: 'pending',
       paymentSchedule: paymentSchedule || 'weekly',
       note: note?.trim() || undefined,
+      orderType,
     });
 
     await order.save();

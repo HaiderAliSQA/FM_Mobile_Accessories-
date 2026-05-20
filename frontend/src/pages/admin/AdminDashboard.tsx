@@ -1,546 +1,340 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetOrdersQuery } from '../../store/api/ordersApi';
-import { useGetAdminProductsQuery, useGetLowStockProductsQuery } from '../../store/api/productsApi';
-import { useGetWholesaleStatsQuery } from '../../store/api/wholesaleApi';
+import { useGetDashboardStatsQuery } from '../../store/api/adminApi';
+import { useGetPaymentsQuery } from '../../store/api/ordersApi';
 import { formatPrice } from '../../utils/formatPrice';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { data: wholesaleStats } = useGetWholesaleStatsQuery();
-  const ws = wholesaleStats?.data;
+  const { data: statsRes, isLoading: statsLoading, isFetching: statsFetching } = useGetDashboardStatsQuery();
+  const { data: paymentsRes, isLoading: paymentsLoading } = useGetPaymentsQuery({ limit: 10 });
 
-  // --- DATE FILTER STATE ---
-  const todayStr = new Date().toISOString().split('T')[0];
-  const [dateFilter, setDateFilter] = useState<'today' | 'yesterday' | 'week' | 'month' | 'custom'>('today');
-  const [dateFrom, setDateFrom] = useState(todayStr);
-  const [dateTo, setDateTo] = useState(todayStr);
+  const stats = statsRes?.data;
+  const recentPayments = paymentsRes?.data || [];
 
-  // --- DATA FETCHING ---
-  // 1. All orders for the selected period
-  const { data: ordersData, isLoading: ordersLoading } = useGetOrdersQuery({
-    page: 1, limit: 100,
-    dateFrom,
-    dateTo
-  });
+  const isLoading = statsLoading || paymentsLoading || statsFetching;
 
-  // 2. All products for inventory stats
-  const { data: productsResult, isLoading: productsLoading } = useGetAdminProductsQuery({ page: 1, limit: 100 });
-  
-  // 3. Specific low-stock products
-  const { data: lowStockResult } = useGetLowStockProductsQuery();
-
-  // 4. Pending orders for quick alerts (fixed at 50 limit)
-  const { data: pendingOrdersResult } = useGetOrdersQuery({
-    orderStatus: 'pending', page: 1, limit: 50
-  });
-
-  // --- HELPERS ---
-  const handleDatePreset = (preset: 'today' | 'yesterday' | 'week' | 'month') => {
-    const now = new Date();
-    let from = new Date();
-    let to = new Date();
-
-    if (preset === 'yesterday') {
-      from.setDate(now.getDate() - 1);
-      to.setDate(now.getDate() - 1);
-    } else if (preset === 'week') {
-      // Monday of current week
-      const day = now.getDay();
-      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-      from.setDate(diff);
-    } else if (preset === 'month') {
-      from = new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-
-    const fStr = from.toISOString().split('T')[0];
-    const tStr = to.toISOString().split('T')[0];
-    
-    setDateFrom(fStr);
-    setDateTo(tStr);
-    setDateFilter(preset);
-  };
-
-  // --- CALCULATED STATS ---
-  const stats = useMemo(() => {
-    const orders = ordersData?.data?.orders || [];
-    const products = productsResult?.data?.products || [];
-    const lowStockItems = lowStockResult?.data || [];
-
-    const pendingCount = pendingOrdersResult?.data?.total || 0;
-    
-    // Status counts for visible period
-    const confirmedCount = orders.filter(o => o.orderStatus === 'confirmed').length;
-    const shippedCount = orders.filter(o => o.orderStatus === 'shipped').length;
-    const deliveredCount = orders.filter(o => o.orderStatus === 'delivered').length;
-
-    // Financials
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
-    
-    const todayRevenue = orders
-      .filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString())
-      .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
-
-    // Filtered period summaries
-    const codCount = orders.filter(o => o.paymentMethod === 'cod').length;
-    const onlineCount = orders.length - codCount;
-
-    // Urgent Issues
-    const paymentPending = orders.filter(
-      o => o.paymentStatus === 'pending' &&
-      ['jazzcash', 'easypaisa', 'bank_transfer'].includes(o.paymentMethod || '')
-    );
-    
-    const paymentPendingTotal = paymentPending.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
-
-    const outOfStock = products.filter(p => p.stock === 0);
-    const visibleProducts = products.filter(p => p.isVisible);
-
-    const todayOrdersList = orders.filter(
-      o => new Date(o.createdAt).toDateString() === new Date().toDateString()
-    );
-
-    return {
-      pendingCount, confirmedCount, shippedCount, deliveredCount,
-      todayRevenue, totalRevenue, paymentPending, paymentPendingTotal,
-      lowStockProducts: lowStockItems, outOfStock, visibleProducts,
-      todayOrdersList, totalOrders: orders.length,
-      totalProducts: productsResult?.data?.total || products.length,
-      codCount, onlineCount
-    };
-  }, [ordersData, productsResult, lowStockResult, pendingOrdersResult]);
-
-  // --- ALERTS ---
-  const alerts = useMemo(() => {
-    const items = [];
-    if (stats.outOfStock.length > 0) items.push(`${stats.outOfStock.length} products out of stock`);
-    if (stats.pendingCount > 0) items.push(`${stats.pendingCount} pending orders need confirmation`);
-    if (stats.paymentPending.length > 0) items.push(`${stats.paymentPending.length} payments need verification`);
-    return items;
-  }, [stats]);
-
-  if (ordersLoading || productsLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#B8860B]"></div>
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-400 font-dm space-y-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-electric border-t-transparent"></div>
+        <p className="text-[11px] uppercase tracking-widest font-black">Syncing command center...</p>
       </div>
     );
   }
 
+  // Fallbacks if stats are empty
+  const totalOrders = stats?.totalOrders || 0;
+  const totalRevenue = stats?.totalRevenue || 0;
+  const totalCollected = stats?.totalCollected || 0;
+  const totalDue = stats?.totalDue || 0;
+  const unpaidOrders = stats?.unpaidOrders || 0;
+  const partialOrders = stats?.partialOrders || 0;
+  const recentOrders = stats?.recentOrders || [];
+  const overdueOrders = stats?.overdueOrders || [];
+
   return (
-    <div className="bg-navy-dark min-h-screen p-6 font-dm text-white">
+    <div className="animate-fadeIn font-dm relative space-y-6">
       
-      {/* 0. WHOLESALE KPI ROW */}
-      {ws && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Wholesale Overview</h2>
-            <button onClick={() => navigate('/admin/wholesale-orders')} className="text-[10px] font-black uppercase tracking-widest text-electric hover:underline">View All →</button>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-navy-mid border border-red-900/40 border-l-4 border-l-red-500 p-5 rounded-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Due 🔴</p>
-              <h3 className="text-2xl font-bold font-heading text-red-400">{formatPrice(ws.totalDue)}</h3>
-              <p className="text-[10px] text-gray-500 mt-1">{ws.unpaidCount + ws.partialCount} unpaid/partial orders</p>
-            </div>
-            <div className="bg-navy-mid border border-navy-light border-l-4 border-l-emerald-500 p-5 rounded-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Collected</p>
-              <h3 className="text-2xl font-bold font-heading text-emerald-400">{formatPrice(ws.totalCollected)}</h3>
-              <p className="text-[10px] text-gray-500 mt-1">{ws.totalOrders} total orders</p>
-            </div>
-            <div className="bg-navy-mid border border-navy-light border-l-4 border-l-electric p-5 rounded-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Unpaid Orders</p>
-              <h3 className="text-2xl font-bold font-heading text-white">{ws.unpaidCount}</h3>
-              <button onClick={() => navigate('/admin/wholesale-orders?paymentStatus=unpaid')} className="text-[10px] text-electric hover:underline mt-1">View →</button>
-            </div>
-            <div className="bg-navy-mid border border-navy-light border-l-4 border-l-navy-light p-5 rounded-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">B2B Customers</p>
-              <h3 className="text-2xl font-bold font-heading text-white">{ws.activeShopKeepers}</h3>
-              <button onClick={() => navigate('/admin/wholesale-orders')} className="text-[10px] text-electric hover:underline mt-1">View Orders →</button>
-            </div>
-          </div>
-
-          {/* Overdue payments */}
-          {ws.overdueOrders && ws.overdueOrders.length > 0 && (
-            <div className="mt-4 bg-navy-mid border border-red-900/30 rounded-xl overflow-hidden">
-              <div className="px-5 py-3 border-b border-red-900/30 flex items-center justify-between">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-red-400">⚠️ Overdue Payments</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left whitespace-nowrap text-[12px]">
-                  <thead className="bg-navy-dark/50 border-b border-navy-light">
-                    <tr>
-                      {['Shop Name', 'Due Amount', 'Expected Date', 'Action'].map((h) => (
-                        <th key={h} className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-navy-light">
-                    {ws.overdueOrders.map((o) => {
-                      const sk = typeof o.shopKeeper === 'object' ? o.shopKeeper : null;
-                      const shopName = o.shopName || sk?.shopName || '—';
-                      const daysOverdue = o.expectedPaymentDate ? Math.floor((Date.now() - new Date(o.expectedPaymentDate).getTime()) / 86400000) : 0;
-                      return (
-                        <tr key={o._id} className="hover:bg-navy-light/20">
-                          <td className="px-4 py-2.5 text-white font-bold">{shopName}</td>
-                          <td className="px-4 py-2.5 text-red-400 font-bold">{formatPrice(o.totalDue)}</td>
-                          <td className="px-4 py-2.5 text-gray-400">
-                            {o.expectedPaymentDate ? new Date(o.expectedPaymentDate).toLocaleDateString('en-PK') : '—'}
-                            {daysOverdue > 0 && <span className="ml-2 text-red-400 font-bold text-[10px]">({daysOverdue}d overdue)</span>}
-                          </td>
-                          <td className="px-4 py-2.5">
-                            <button onClick={() => navigate(`/admin/wholesale-orders/${o._id}`)} className="text-electric text-[11px] font-bold hover:underline">View →</button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+      {/* HEADER & WHOLESALE BADGE */}
+      <div className="flex items-center justify-between border-b border-navy-light pb-5">
+        <div className="flex items-center gap-3">
+          <h1 className="font-heading text-white text-3xl font-bold">FH Mobile Accessories</h1>
+          <span className="bg-electric text-white text-[10px] px-2.5 py-1 rounded-md font-bold tracking-wider uppercase shadow-sm">
+            WHOLESALE
+          </span>
         </div>
-      )}
-      
-      {/* 1. ALERT STRIP */}
-      {alerts.length > 0 && (
-        <div className="bg-navy-mid border border-electric p-4 mb-8 flex items-center justify-between shadow-sm animate-pulse">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-[#F59E0B] rounded-full"></div>
-            <span className="text-sm font-bold uppercase tracking-wider text-electric">
-              System Alerts: {alerts.join(' • ')}
-            </span>
-          </div>
-          <button 
-            onClick={() => navigate('/admin/orders?status=pending')}
-            className="text-[11px] font-black uppercase tracking-widest text-electric hover:underline"
-          >
-            Review Now →
-          </button>
-        </div>
-      )}
-
-      {/* 2. HEADER & DATE FILTER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
-        <div>
-          <h1 className="font-playfair text-4xl font-black mb-2 uppercase tracking-tighter">Command Center</h1>
-          <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Performance Analytics Overview</p>
-        </div>
-
-        <div className="bg-navy-mid border border-navy-light p-2 flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex gap-1">
-            {['today', 'yesterday', 'week', 'month'].map((p) => (
-              <button
-                key={p}
-                onClick={() => handleDatePreset(p as any)}
-                className={`px-4 py-2 text-[10px] uppercase font-black tracking-widest transition-all ${
-                  dateFilter === p ? 'bg-navy-light text-electric' : 'hover:bg-navy-dark text-gray-400'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-          <div className="h-4 w-px bg-[#E8E4DC] hidden sm:block"></div>
-          <div className="flex gap-2 items-center px-2">
-            <input 
-              type="date" 
-              value={dateFrom} 
-              onChange={(e) => { setDateFrom(e.target.value); setDateFilter('custom'); }}
-              className="text-[11px] font-bold outline-none border-b border-transparent focus:border-[#B8860B]" 
-            />
-            <span className="text-gray-400">to</span>
-            <input 
-              type="date" 
-              value={dateTo} 
-              onChange={(e) => { setDateTo(e.target.value); setDateFilter('custom'); }}
-              className="text-[11px] font-bold outline-none border-b border-transparent focus:border-[#B8860B]" 
-            />
-          </div>
-        </div>
+        <p className="text-gray-400 tracking-[0.2em] text-[10px] uppercase font-bold hidden sm:block">
+          Admin Portal • Live Balance Ledger
+        </p>
       </div>
 
-      {/* 3. ROW 1 — 4 KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Card 1: Pending */}
-        <div className={`bg-navy-mid p-6 border border-navy-light shadow-sm ${stats.pendingCount > 0 ? 'border-l-[3px] border-l-[#EF4444]' : 'border-l-[3px] border-l-electric'}`}>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Pending Orders</p>
-          <h2 className="text-3xl font-playfair font-black mb-1">{stats.pendingCount}</h2>
-          <p className="text-[11px] font-bold text-[#1A1A1A]/40 uppercase tracking-widest">Needs confirmation</p>
-        </div>
-
-        {/* Card 2: Today Revenue */}
-        <div className="bg-navy-mid p-6 border border-navy-light border-l-[3px] border-l-electric shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Today's Revenue</p>
-          <h2 className="text-3xl font-playfair font-black mb-1 text-electric">{formatPrice(stats.todayRevenue)}</h2>
-          <p className="text-[11px] font-bold text-[#1A1A1A]/40 uppercase tracking-widest">{stats.todayOrdersList.length} orders today</p>
-        </div>
-
-        {/* Card 3: Low Stock */}
-        <div className={`bg-navy-mid p-6 border border-navy-light shadow-sm ${stats.lowStockProducts.length > 0 ? 'border-l-[3px] border-l-[#F59E0B]' : 'border-l-[3px] border-l-[#22C55E]'}`}>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Inventory Alerts</p>
-          <h2 className="text-3xl font-playfair font-black mb-1">{stats.lowStockProducts.length} items</h2>
-          <p className="text-[11px] font-bold text-[#1A1A1A]/40 uppercase tracking-widest">{stats.outOfStock.length} out of stock</p>
-        </div>
-
-        {/* Card 4: Products */}
-        <div className="bg-navy-mid p-6 border border-navy-light border-l-[3px] border-l-navy-light shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Total Catalog</p>
-          <h2 className="text-3xl font-playfair font-black mb-1">{stats.totalProducts}</h2>
-          <p className="text-[11px] font-bold text-[#1A1A1A]/40 uppercase tracking-widest">
-            {stats.visibleProducts.length} visible • {stats.totalProducts - stats.visibleProducts.length} hidden
-          </p>
-        </div>
-      </div>
-
-      {/* 4. ROW 2 — 3 SECONDARY STATS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-        {/* Total Orders / Efficiency */}
-        <div className="bg-navy-mid p-8 border border-navy-light shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-end mb-6">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Total Orders</p>
-              <h3 className="text-4xl font-playfair font-black">{stats.totalOrders}</h3>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#22C55E]">Delivered: {stats.deliveredCount}</p>
-              <p className="text-xs font-dm font-bold text-white">{Math.round((stats.deliveredCount / (stats.totalOrders || 1)) * 100)}% Fulfilment</p>
-            </div>
+      {/* OVERDUE ALERTS BANNERS */}
+      {overdueOrders.length > 0 && (
+        <div className="bg-amber-950/20 border border-amber-800/40 rounded-xl p-5 shadow-xs">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">⚠️</span>
+            <h3 className="text-amber-400 text-xs font-bold uppercase tracking-[0.2em]">
+              Orders Needing Payment Follow-up
+            </h3>
           </div>
-          <div className="w-full h-1 bg-navy-dark">
-            <div 
-              className="h-full bg-[#B8860B]" 
-              style={{ width: `${(stats.deliveredCount / (stats.totalOrders || 1)) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Financial Period Revenue */}
-        <div className="bg-navy-mid p-8 border border-navy-light shadow-sm relative overflow-hidden">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1 uppercase">Period Revenue</p>
-          <h3 className="text-4xl font-playfair font-black mb-6">{formatPrice(stats.totalRevenue)}</h3>
-          <div className="w-full h-1 bg-navy-dark">
-            <div className="h-full bg-navy-light" style={{ width: '100%' }}></div>
-          </div>
-        </div>
-
-        {/* Verification Alert */}
-        <div className={`bg-navy-mid p-8 border border-navy-light shadow-sm relative overflow-hidden ${stats.paymentPending.length > 0 ? 'bg-amber-50/30' : ''}`}>
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Pending Ledger</p>
-              <h3 className="text-4xl font-playfair font-black text-[#EF4444]">{stats.paymentPending.length}</h3>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-electric">Verification Value</p>
-              <p className="text-xs font-dm font-bold text-white">{formatPrice(stats.paymentPendingTotal)}</p>
-            </div>
-          </div>
-          <div className="w-full h-1 bg-navy-dark">
-            <div 
-              className="h-full bg-amber-400" 
-              style={{ width: stats.paymentPending.length > 0 ? '60%' : '0%' }}
-            ></div>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. MAIN GRID */}
-      <div className="flex flex-col xl:flex-row gap-8">
-        
-        {/* LEFT: RECENT ORDERS */}
-        <div className="flex-1 bg-navy-mid border border-navy-light shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-navy-light flex justify-between items-center bg-navy-mid">
-            <div className="flex items-center gap-4">
-              <h2 className="font-playfair text-xl font-black uppercase tracking-tight">Recent Orders</h2>
-              <span className="bg-[#B8860B] text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
-                {stats.pendingCount} New
-              </span>
-            </div>
-            <button 
-              onClick={() => navigate('/admin/orders')}
-              className="text-[10px] font-black uppercase tracking-widest text-electric hover:underline"
-            >
-              View Full Report →
-            </button>
-          </div>
-
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-navy-light/50">
-                  <th className="px-2 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-navy-light">Order Detail</th>
-                  <th className="px-2 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-navy-light">Customer Info</th>
-                  <th className="px-2 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-navy-light">Inventory Items</th>
-                  <th className="px-2 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-navy-light">Payment</th>
-                  <th className="px-2 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-navy-light">Validation</th>
+            <table className="w-full text-left whitespace-nowrap text-[12px]">
+              <thead className="bg-navy-dark/40 border-b border-navy-light text-gray-400 font-bold uppercase text-[9px] tracking-widest">
+                <tr>
+                  <th className="px-4 py-3">Shop Name</th>
+                  <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3 text-right">Remaining Due</th>
+                  <th className="px-4 py-3">Order Date</th>
+                  <th className="px-4 py-3">Days Since</th>
+                  <th className="px-4 py-3 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody>
-                {(ordersData?.data?.orders || []).slice(0, 10).map((order) => (
-                  <tr 
-                    key={order._id} 
-                    onClick={() => navigate(`/admin/orders?highlight=${order._id}`)}
-                    className="group hover:bg-navy-dark transition-colors cursor-pointer border-b border-navy-light last:border-0"
-                  >
-                    <td className="px-2 py-4">
-                      <p className="text-[11px] font-black text-electric mb-0.5">#{order.orderNumber ? order.orderNumber.replace(/^KM-/, 'FH-') : ''}</p>
-                      <p className="text-[10px] text-gray-400 font-bold">
-                        {new Date(order.createdAt).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </td>
-                    <td className="px-2 py-4">
-                      <p className="text-[12px] font-black leading-tight">{order.customerName}</p>
-                      <p className="text-[10px] text-gray-400 font-bold">{order.customerPhone}</p>
-                    </td>
-                    <td className="px-2 py-4">
-                      <div className="space-y-1">
-                        {(order.items || []).map((item, idx) => (
-                          <div key={idx} className="text-[10px] font-bold">
-                            <span className="uppercase">{item.name}</span> × {item.quantity}
-                            <span className="ml-2 text-gray-400">[S:{item.size} C:{item.color}]</span>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-2 py-4">
-                      <p className="font-playfair text-[13px] font-black text-electric mb-1">{formatPrice(order.totalAmount)}</p>
-                      <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
-                        order.paymentMethod === 'cod' ? 'bg-navy-dark text-gray-400' :
-                        order.paymentMethod === 'jazzcash' ? 'bg-orange-100/50 text-orange-600' :
-                        order.paymentMethod === 'easypaisa' ? 'bg-green-100/50 text-green-600' :
-                        'bg-blue-100/50 text-blue-600'
-                      }`}>
-                        {order.paymentMethod === 'cod' ? 'C.O.D' : order.paymentMethod?.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-2 py-4">
-                      <span className={`text-[9px] px-3 py-1 font-black uppercase tracking-widest ${
-                        order.orderStatus === 'pending' ? 'bg-orange-50 text-orange-600' :
-                        order.orderStatus === 'confirmed' ? 'bg-blue-50 text-blue-600' :
-                        order.orderStatus === 'processing' ? 'bg-purple-50 text-purple-600' :
-                        order.orderStatus === 'shipped' ? 'bg-indigo-50 text-indigo-600' :
-                        order.orderStatus === 'delivered' ? 'bg-green-50 text-green-600' :
-                        'bg-red-50 text-red-600'
-                      }`}>
-                        {order.orderStatus}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-navy-light/60">
+                {overdueOrders.map((order) => {
+                  const daysSince = Math.floor(
+                    (Date.now() - new Date(order.createdAt).getTime()) / 86400000
+                  );
+                  return (
+                    <tr key={order._id} className="hover:bg-navy-mid/20 transition-colors">
+                      <td className="px-4 py-3 font-bold text-white uppercase tracking-wide">
+                        {order.shopName}
+                      </td>
+                      <td className="px-4 py-3 text-gray-300 font-mono text-[11px]">
+                        {order.phone}
+                      </td>
+                      <td className="px-4 py-3 text-right text-red-400 font-bold">
+                        {formatPrice(order.totalDue)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-400 font-medium">
+                        {new Date(order.createdAt).toLocaleDateString('en-PK', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      <td className="px-4 py-3 text-amber-500 font-bold">
+                        {daysSince} Days
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => navigate(`/admin/orders/${order._id}`)}
+                          className="px-3 py-1 bg-electric/10 border border-electric/30 text-electric hover:bg-electric hover:text-white rounded-md text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+                        >
+                          Follow Up
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          {(!ordersData?.data?.orders || ordersData?.data?.orders.length === 0) && (
-            <div className="p-12 text-center">
-              <p className="text-gray-400 text-xs font-black uppercase tracking-[0.2em]">Zero orders logged for this period</p>
-            </div>
-          )}
+        </div>
+      )}
+
+      {/* KPI CARDS GRID (2x3 Grid) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+        {/* 1. Total Orders */}
+        <div className="bg-navy-mid border border-navy-light p-5 rounded-xl shadow-xs border-l-4 border-l-electric">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+            Total Orders
+          </p>
+          <h3 className="text-2xl font-bold text-white font-heading">{totalOrders}</h3>
+          <p className="text-[10px] text-gray-500 mt-1.5 uppercase font-bold tracking-wider">
+            Guest Transactions
+          </p>
         </div>
 
-        {/* RIGHT PANELS */}
-        <div className="w-full xl:w-[340px] space-y-6">
-          
-          {/* PANEL 1: QUICK ACTIONS */}
-          <div className="bg-navy-mid border border-navy-light p-6 shadow-sm">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white mb-6">Strategy Panel</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Add Item', icon: 'plus', onClick: () => navigate('/admin/products/add') },
-                { label: 'All Orders', icon: 'list', onClick: () => navigate('/admin/orders') },
-                { label: 'Verification', icon: 'shield', onClick: () => navigate('/admin/orders?filter=pending-payment') },
-                { label: 'Live Store', icon: 'eye', onClick: () => window.open('/', '_blank') }
-              ].map((btn) => (
-                <button
-                  key={btn.label}
-                  onClick={btn.onClick}
-                  className="bg-navy-mid border border-navy-light p-4 flex flex-col items-center justify-center gap-2 hover:border-electric hover:bg-navy-light transition-all group"
-                >
-                  <div className="text-electric group-hover:scale-110 transition-transform">
-                    {btn.icon === 'plus' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>}
-                    {btn.icon === 'list' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
-                    {btn.icon === 'shield' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
-                    {btn.icon === 'eye' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>}
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest">{btn.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* 2. Total Revenue */}
+        <div className="bg-navy-mid border border-navy-light p-5 rounded-xl shadow-xs border-l-4 border-l-electric">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+            Total Revenue
+          </p>
+          <h3 className="text-2xl font-bold text-white font-heading">{formatPrice(totalRevenue)}</h3>
+          <p className="text-[10px] text-gray-500 mt-1.5 uppercase font-bold tracking-wider">
+            Gross B2B Booked
+          </p>
+        </div>
 
-          {/* PANEL 2: LOW STOCK */}
-          <div className="bg-navy-mid border border-navy-light p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] ${stats.lowStockProducts.length > 0 ? 'text-[#EF4444]' : 'text-white'}`}>
-                Low Stock Alert
-              </h3>
-              <button 
-                onClick={() => navigate('/admin/products')}
-                className="text-[9px] font-black uppercase tracking-widest text-electric hover:underline"
-              >
-                Manage →
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              {stats.lowStockProducts.slice(0, 6).map((item) => (
-                <div key={item._id} className="flex justify-between items-center group">
-                  <div>
-                    <p className="text-[11px] font-black group-hover:text-electric transition-colors uppercase truncate max-w-[180px]">{item.name}</p>
-                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{item.category}</p>
-                  </div>
-                  <div className={`px-2 py-1 rounded-sm text-[10px] font-black ${
-                    item.stock === 0 ? 'bg-red-100 text-red-600' :
-                    item.stock <= 5 ? 'text-red-600 underline' :
-                    'text-amber-600'
-                  }`}>
-                    {item.stock === 0 ? 'OUT' : item.stock}
-                  </div>
-                </div>
-              ))}
-              {stats.lowStockProducts.length === 0 && (
-                <p className="text-[#22C55E] text-[10px] font-black uppercase text-center py-4 tracking-widest">All products well stocked ✓</p>
-              )}
-            </div>
-          </div>
+        {/* 3. Total Collected */}
+        <div className="bg-navy-mid border border-navy-light p-5 rounded-xl shadow-xs border-l-4 border-l-emerald-500">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+            Total Collected
+          </p>
+          <h3 className="text-2xl font-bold text-emerald-400 font-heading">
+            {formatPrice(totalCollected)}
+          </h3>
+          <p className="text-[10px] text-gray-500 mt-1.5 uppercase font-bold tracking-wider">
+            Installments Clear
+          </p>
+        </div>
 
-          {/* PANEL 3: TODAY SUMMARY */}
-          <div className="bg-navy-light border border-navy-light p-6 shadow-lg text-white">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-electric">Daily Report</h3>
-              <span className="text-[10px] font-bold text-white/50">{new Date().toLocaleDateString('en-PK', { day: 'numeric', month: 'short' })}</span>
-            </div>
-            
-            <div className="space-y-4 font-dm">
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">New Traffic</span>
-                <span className="text-sm font-black">{stats.todayOrdersList.length} Orders</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Revenue</span>
-                <span className="text-sm font-black text-[#C9A84C] font-playfair">{formatPrice(stats.todayRevenue)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">C.O.D Utilization</span>
-                <span className="text-sm font-bold">{stats.codCount} Trans.</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Digital Payment</span>
-                <span className="text-sm font-bold">{stats.onlineCount} Trans.</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Dispatched Today</span>
-                <span className="text-sm font-bold text-green-400">{stats.shippedCount + stats.deliveredCount} Units</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] font-bold text-[#EF4444] uppercase tracking-widest">Pending Action</span>
-                <span className="text-sm font-bold text-[#EF4444]">{stats.pendingCount} Red</span>
-              </div>
-            </div>
-          </div>
+        {/* 4. Total Due (Red Highlight Card) */}
+        <div className="bg-red-950/20 border border-red-900/40 p-5 rounded-xl shadow-xs border-l-4 border-l-red-500">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">
+            Total Due 🔴
+          </p>
+          <h3 className="text-2xl font-bold text-red-400 font-heading">
+            {formatPrice(totalDue)}
+          </h3>
+          <p className="text-[10px] text-red-500/80 mt-1.5 uppercase font-bold tracking-wider">
+            Accounts Outstanding
+          </p>
+        </div>
 
+        {/* 5. Unpaid Orders */}
+        <div className="bg-navy-mid border border-navy-light p-5 rounded-xl shadow-xs border-l-4 border-l-amber-500">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+            Unpaid Orders
+          </p>
+          <h3 className="text-2xl font-bold text-white font-heading">{unpaidOrders}</h3>
+          <button
+            onClick={() => navigate('/admin/orders')}
+            className="text-[9px] text-electric hover:underline font-bold uppercase tracking-widest mt-2 block"
+          >
+            Filter List &rarr;
+          </button>
+        </div>
+
+        {/* 6. Partial Orders */}
+        <div className="bg-navy-mid border border-navy-light p-5 rounded-xl shadow-xs border-l-4 border-l-amber-500">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+            Partial Paid
+          </p>
+          <h3 className="text-2xl font-bold text-white font-heading">{partialOrders}</h3>
+          <button
+            onClick={() => navigate('/admin/orders')}
+            className="text-[9px] text-electric hover:underline font-bold uppercase tracking-widest mt-2 block"
+          >
+            View Ledgers &rarr;
+          </button>
         </div>
       </div>
+
+      {/* RECENT ORDERS & PAYMENTS (Split Layout) */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        
+        {/* RECENT ORDERS PANEL */}
+        <div className="bg-navy-mid border border-navy-light rounded-xl overflow-hidden shadow-sm">
+          <div className="px-5 py-4 border-b border-navy-light flex justify-between items-center bg-navy-mid shrink-0">
+            <h3 className="font-heading text-white text-base font-bold">Recent Orders</h3>
+            <button
+              onClick={() => navigate('/admin/orders')}
+              className="text-[10px] font-black uppercase tracking-widest text-electric hover:underline cursor-pointer"
+            >
+              All Orders &rarr;
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap text-[12px]">
+              <thead className="bg-navy-dark/40 border-b border-navy-light text-gray-400 font-bold uppercase text-[9px] tracking-widest">
+                <tr>
+                  <th className="px-4 py-3">Order ID</th>
+                  <th className="px-4 py-3">Shop Info</th>
+                  <th className="px-4 py-3 text-right">Amount</th>
+                  <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-navy-light/60">
+                {recentOrders.slice(0, 10).map((order) => (
+                  <tr
+                    key={order._id}
+                    onClick={() => navigate(`/admin/orders/${order._id}`)}
+                    className="hover:bg-navy-light/20 transition-colors cursor-pointer"
+                  >
+                    <td className="px-4 py-3.5 font-mono font-bold text-electric">
+                      {order.orderId}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="text-white font-bold uppercase tracking-wide">
+                        {order.shopName}
+                      </p>
+                      <p className="text-gray-400 text-[10px]">{order.ownerName}</p>
+                    </td>
+                    <td className="px-4 py-3.5 text-right font-bold text-white">
+                      {formatPrice(order.totalAmount)}
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full ${
+                        order.paymentStatus === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800' :
+                        order.paymentStatus === 'partial' ? 'bg-amber-950/40 text-amber-400 border border-amber-800' :
+                        'bg-red-950/40 text-red-400 border border-red-800'
+                      }`}>
+                        {order.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-gray-400 font-medium">
+                      {new Date(order.createdAt).toLocaleDateString('en-PK', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </td>
+                  </tr>
+                ))}
+                {recentOrders.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-10 text-center text-gray-500 font-bold uppercase tracking-widest">
+                      No orders found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* RECENT PAYMENTS PANEL */}
+        <div className="bg-navy-mid border border-navy-light rounded-xl overflow-hidden shadow-sm">
+          <div className="px-5 py-4 border-b border-navy-light flex justify-between items-center bg-navy-mid shrink-0">
+            <h3 className="font-heading text-white text-base font-bold">Recent Payments</h3>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+              Collection ledger
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap text-[12px]">
+              <thead className="bg-navy-dark/40 border-b border-navy-light text-gray-400 font-bold uppercase text-[9px] tracking-widest">
+                <tr>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Shop Name</th>
+                  <th className="px-4 py-3 text-right">Amount</th>
+                  <th className="px-4 py-3">Method</th>
+                  <th className="px-4 py-3">Order ID</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-navy-light/60">
+                {recentPayments.map((p) => {
+                  const o = typeof p.order === 'object' ? p.order : null;
+                  const orderIdStr = o?.orderId || p.orderId || '—';
+                  const shopNameStr = p.shopName || o?.shopName || '—';
+                  return (
+                    <tr
+                      key={p._id}
+                      onClick={() => navigate(`/admin/orders/${o?._id || p.order}`)}
+                      className="hover:bg-navy-light/20 transition-colors cursor-pointer"
+                    >
+                      <td className="px-4 py-3.5 text-gray-400 font-medium">
+                        {new Date(p.paymentDate || p.createdAt).toLocaleDateString('en-PK', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <p className="text-white font-bold uppercase tracking-wide">
+                          {shopNameStr}
+                        </p>
+                        <p className="text-gray-400 text-[10px] font-mono">{p.phone}</p>
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-bold text-emerald-400">
+                        +{formatPrice(p.amount)}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-navy-dark text-gray-300 rounded-md border border-navy-light">
+                          {p.method}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-gray-400">
+                        {orderIdStr}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {recentPayments.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-10 text-center text-gray-500 font-bold uppercase tracking-widest">
+                      No payments recorded yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };

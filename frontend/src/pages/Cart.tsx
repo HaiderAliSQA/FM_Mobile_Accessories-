@@ -5,7 +5,6 @@ import { useAppDispatch, useAppSelector } from '../store/store';
 import {
   selectCartItems,
   selectCartSubtotal,
-  selectCartDelivery,
   selectCartTotal,
   removeFromCart,
   updateQuantity,
@@ -19,7 +18,6 @@ const Cart: React.FC = () => {
   const navigate = useNavigate();
   const items = useAppSelector(selectCartItems);
   const subtotal = useAppSelector(selectCartSubtotal);
-  const delivery = useAppSelector(selectCartDelivery);
   const total = useAppSelector(selectCartTotal);
 
   const handleRemove = (productId: string, size?: number, color?: string) => {
@@ -157,15 +155,33 @@ const Cart: React.FC = () => {
               <h2 className="font-heading text-white text-2xl font-extrabold uppercase tracking-tight italic border-b border-white/5 pb-6">Summary</h2>
               
               <div className="space-y-6 font-body text-sm">
-                <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
+                {items.reduce((sum, item) => sum + item.quantity, 0) === 1 ? (
+                  <>
+                    <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
+                      <span>🏷️ Order Type</span>
+                      <span className="text-white text-base font-extrabold">Customer Order</span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
+                      <span>📦 TCS Delivery</span>
+                      <span className="text-white text-base font-extrabold">{formatPKR(200)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
+                      <span>🏭 Order Type</span>
+                      <span className="text-white text-base font-extrabold">Wholesale Order</span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
+                      <span>🚚 Delivery</span>
+                      <span className="text-green-400 text-base font-extrabold">FREE ✅</span>
+                    </div>
+                  </>
+                )}
+                
+                <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px] pt-4 border-t border-white/5">
                   <span>Subtotal</span>
                   <span className="text-white text-base">{formatPKR(subtotal)}</span>
-                </div>
-                <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[11px]">
-                  <span>Shipping TCS</span>
-                  <span className={delivery === 0 ? 'text-green-400 font-bold' : 'text-white text-base'}>
-                    {delivery === 0 ? 'FREE' : formatPKR(delivery)}
-                  </span>
                 </div>
                 
                 <div className="pt-2">

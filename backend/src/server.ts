@@ -101,6 +101,25 @@ app.use(errorHandler);
 const startServer = async (): Promise<void> => {
   try {
     await connectDB();
+
+    // Background migration for legacy orders missing orderType field
+    try {
+      const Order = (await import('./models/Order')).default;
+      const count = await Order.countDocuments({ orderType: { $exists: false } });
+      if (count > 0) {
+        console.log(`🔄 [Migration] Found ${count} legacy orders without orderType. Migrating...`);
+        const legacyOrders = await Order.find({ orderType: { $exists: false } });
+        for (const order of legacyOrders) {
+          const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
+          order.orderType = totalQty === 1 ? 'customer' : 'wholesale';
+          await order.save({ validateBeforeSave: false });
+        }
+        console.log(`✅ [Migration] Legacy orders migration complete!`);
+      }
+    } catch (migErr) {
+      console.error('⚠️ [Migration] Failed to migrate legacy orders:', migErr);
+    }
+
     await verifyEmailConnection();
     configureCloudinary();
 

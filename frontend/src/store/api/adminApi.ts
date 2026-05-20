@@ -16,10 +16,14 @@ interface LoginResponse {
 }
 
 interface DashboardStats {
-  totalProducts: number;
-  visibleProducts: number;
   totalOrders: number;
-  pendingOrders: number;
+  totalRevenue: number;
+  totalCollected: number;
+  totalDue: number;
+  unpaidOrders: number;
+  partialOrders: number;
+  recentOrders: any[];
+  overdueOrders: any[];
 }
 
 interface UploadResult {
@@ -78,17 +82,8 @@ export const adminApi = createApi({
     }),
 
     getDashboardStats: builder.query<ApiResponse<DashboardStats>, void>({
-      query: () => '/orders?limit=1&page=1',
+      query: () => '/admin/dashboard',
       providesTags: ['Stats'],
-      transformResponse: () => ({
-        success: true,
-        data: {
-          totalProducts: 0,
-          visibleProducts: 0,
-          totalOrders: 0,
-          pendingOrders: 0,
-        },
-      }),
     }),
 
     // ── UPLOAD SINGLE IMAGE ──────────────────────────────────
